@@ -8,8 +8,8 @@ import {
   Image,
   Alert,
 } from 'react-native';
+import {loginUser} from '../../../utils/api';
 
-// Type definition for navigation prop
 type UserLoginProps = {
   navigation: {
     navigate: (screen: string) => void;
@@ -17,7 +17,6 @@ type UserLoginProps = {
 };
 
 const UserLogin: React.FC<UserLoginProps> = ({navigation}) => {
-  // State for form inputs
   const [formData, setFormData] = useState<{
     email: string;
     password: string;
@@ -26,9 +25,8 @@ const UserLogin: React.FC<UserLoginProps> = ({navigation}) => {
     password: '',
   });
 
-  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Function to handle input change
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -36,28 +34,27 @@ const UserLogin: React.FC<UserLoginProps> = ({navigation}) => {
     }));
   };
 
-  // Function to handle login
   const handleLogin = async () => {
     const {email, password} = formData;
 
-    // Validate inputs
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in both fields.');
       return;
     }
 
-    // Replace the below credentials check with an API call in the future
-    const validEmail = 'itszaidejaz@gmail.com';
-    const validPassword = '12345678';
+    try {
+      const response = await loginUser(email, password);
 
-    if (email === validEmail && password === validPassword) {
-      // Navigate to UserHome after successful login
-      navigation.navigate('UserHome');
-    } else {
-      Alert.alert(
-        'Invalid Credentials',
-        'Please enter correct Email and Password.',
-      );
+      if (response.success) {
+        navigation.navigate('UserHome');
+      } else {
+        Alert.alert(
+          'Invalid Credentials',
+          'Please enter correct Email and Password.',
+        );
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An error occurred. Please try again later.');
     }
   };
 

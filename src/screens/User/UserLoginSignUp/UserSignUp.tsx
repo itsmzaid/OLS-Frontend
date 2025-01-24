@@ -8,6 +8,7 @@ import {
   Image,
   Alert,
 } from 'react-native';
+import {registerUser} from '../../../utils/api';
 
 type UserSignUpProps = {
   navigation: {
@@ -33,7 +34,7 @@ const UserSignUp: React.FC<UserSignUpProps> = ({navigation}) => {
     password: '',
   });
 
-  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -41,9 +42,25 @@ const UserSignUp: React.FC<UserSignUpProps> = ({navigation}) => {
       [field]: value,
     }));
 
-    // Real-time validation
     if (field === 'phoneNo') {
-      if (!/^\+923\d{9}$/.test(value)) {
+      // Handle phone number formatting for backend
+      let formattedPhoneNo = value.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+
+      if (formattedPhoneNo.startsWith('03')) {
+        formattedPhoneNo = '+92' + formattedPhoneNo.slice(1); // Remove the leading 0 and prepend +92
+      } else if (
+        formattedPhoneNo.startsWith('3') &&
+        formattedPhoneNo.length === 10
+      ) {
+        formattedPhoneNo = '+92' + formattedPhoneNo; // Prepend +92 if it starts with 3 and has 10 digits
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        phoneNo: formattedPhoneNo,
+      }));
+
+      if (!/^\+923\d{9}$/.test(formattedPhoneNo)) {
         setErrors(prev => ({
           ...prev,
           phoneNo:
@@ -72,7 +89,7 @@ const UserSignUp: React.FC<UserSignUpProps> = ({navigation}) => {
     }
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     const {name, email, phoneNo, password} = formData;
 
     if (!name || !email || !phoneNo || !password) {
@@ -85,16 +102,21 @@ const UserSignUp: React.FC<UserSignUpProps> = ({navigation}) => {
       return;
     }
 
-    const signUpData = {
-      name,
-      email,
-      phoneNo,
-      password,
-    };
+    try {
+      const signUpData = {
+        name,
+        email,
+        phoneNo,
+        password,
+      };
 
-    console.log('Sending signup data to backend:', signUpData);
-
-    navigation.navigate('UserHome');
+      console.log('Sending signup data to backend:', signUpData);
+      const response = await registerUser(signUpData);
+      Alert.alert('Success', 'User registered successfully!');
+      navigation.navigate('UserHome'); // Navigate to the home screen on success
+    } catch (error: any) {
+      Alert.alert('Registration Failed', error.message);
+    }
   };
 
   return (
@@ -137,18 +159,8 @@ const UserSignUp: React.FC<UserSignUpProps> = ({navigation}) => {
           placeholder="Phone Number (e.g., 3XXXXXXXXX)"
           placeholderTextColor="#1398D0"
           keyboardType="phone-pad"
-          value={formData.phoneNo ? `+92${formData.phoneNo}` : '+92'} // Always show +92 as a prefix
-          onChangeText={value => {
-            const sanitizedValue = value
-              .replace(/[^0-9]/g, '')
-              .replace(/^92/, ''); // Remove '92' if typed mistakenly
-            if (sanitizedValue.startsWith('3') && sanitizedValue.length <= 10) {
-              handleInputChange('phoneNo', sanitizedValue); // Update only the valid part of the number
-              if (sanitizedValue.length === 10) {
-                setErrors(prev => ({...prev, phoneNo: ''})); // Clear error message when phone number is complete
-              }
-            }
-          }}
+          value={formData.phoneNo}
+          onChangeText={value => handleInputChange('phoneNo', value)}
         />
         {errors.phoneNo ? (
           <Text style={styles.errorText}>{errors.phoneNo}</Text>
