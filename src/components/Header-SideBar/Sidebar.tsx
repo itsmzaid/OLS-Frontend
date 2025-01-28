@@ -1,11 +1,19 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 
 type SidebarProps = {
   onClose: () => void;
+  navigation: any; // This allows you to use navigation here if needed
 };
 
-const Sidebar: React.FC<SidebarProps> = ({onClose}) => {
+const Sidebar: React.FC<SidebarProps> = ({onClose, navigation}) => {
+  const handleLogout = async () => {
+    // Remove the token from AsyncStorage on logout
+    await AsyncStorage.removeItem('userToken');
+    navigation.navigate('UserLogin'); // Redirect to login screen after logout
+  };
+
   return (
     <View style={styles.sidebarContainer}>
       <View style={styles.sidebar}>
@@ -19,9 +27,10 @@ const Sidebar: React.FC<SidebarProps> = ({onClose}) => {
           <Text style={styles.menuText}>Contact Us</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.logoutButton}>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
+
         <View>
           <Text style={styles.copyrightText}>copyright © 2025 OLS</Text>
         </View>

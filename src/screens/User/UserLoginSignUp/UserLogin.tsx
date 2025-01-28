@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import {loginUser} from '../../../utils/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type UserLoginProps = {
   navigation: {
@@ -46,6 +47,8 @@ const UserLogin: React.FC<UserLoginProps> = ({navigation}) => {
       const response = await loginUser(email, password);
 
       if (response.idToken) {
+        // Store the token in AsyncStorage
+        await AsyncStorage.setItem('userToken', response.idToken);
         navigation.navigate('UserHome');
       } else {
         Alert.alert(
@@ -57,7 +60,6 @@ const UserLogin: React.FC<UserLoginProps> = ({navigation}) => {
       Alert.alert('Error', error.message);
     }
   };
-
   return (
     <View style={styles.container}>
       <Image

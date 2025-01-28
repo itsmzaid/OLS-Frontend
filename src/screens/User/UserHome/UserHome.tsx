@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  BackHandler,
 } from 'react-native';
 
 import Sidebar from '../../../components/Header-SideBar/Sidebar';
@@ -13,22 +14,38 @@ import Sidebar from '../../../components/Header-SideBar/Sidebar';
 type UserHomeProps = {
   navigation: {
     navigate: (screen: string, params?: object) => void;
+    replace: (screen: string) => void;
   };
 };
 
 const UserHome: React.FC<UserHomeProps> = ({navigation}) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  // Block the back button when on the home screen
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        // Prevent back navigation on this screen
+        return true; // Returning true blocks the back action
+      },
+    );
 
+    return () => {
+      backHandler.remove(); // Clean up on unmount
+    };
+  }, []);
   const handleOrderHistory = () => {
     navigation.navigate('OrderHistory');
   };
 
   return (
     <View style={styles.container}>
-      {/* Sidebar Overlay */}
       {isSidebarOpen && (
         <View style={styles.sidebarOverlay}>
-          <Sidebar onClose={() => setIsSidebarOpen(false)} />
+          <Sidebar
+            onClose={() => setIsSidebarOpen(false)}
+            navigation={navigation}
+          />
         </View>
       )}
       <View style={styles.header}>
