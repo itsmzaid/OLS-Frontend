@@ -43,16 +43,15 @@ const UserSignUp: React.FC<UserSignUpProps> = ({navigation}) => {
     }));
 
     if (field === 'phoneNo') {
-      // Handle phone number formatting for backend
-      let formattedPhoneNo = value.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+      let formattedPhoneNo = value.replace(/[^0-9]/g, '');
 
       if (formattedPhoneNo.startsWith('03')) {
-        formattedPhoneNo = '+92' + formattedPhoneNo.slice(1); // Remove the leading 0 and prepend +92
+        formattedPhoneNo = '+92' + formattedPhoneNo.slice(1);
       } else if (
         formattedPhoneNo.startsWith('3') &&
         formattedPhoneNo.length === 10
       ) {
-        formattedPhoneNo = '+92' + formattedPhoneNo; // Prepend +92 if it starts with 3 and has 10 digits
+        formattedPhoneNo = '+92' + formattedPhoneNo;
       }
 
       setFormData(prev => ({
@@ -111,9 +110,10 @@ const UserSignUp: React.FC<UserSignUpProps> = ({navigation}) => {
       };
 
       console.log('Sending signup data to backend:', signUpData);
-      const response = await registerUser(signUpData);
-      Alert.alert('Success', 'User registered successfully!');
-      navigation.navigate('UserHome'); // Navigate to the home screen on success
+      if (await registerUser(signUpData)) {
+        Alert.alert('Success', 'User registered successfully!');
+        navigation.navigate('UserHome');
+      }
     } catch (error: any) {
       Alert.alert('Registration Failed', error.message);
     }

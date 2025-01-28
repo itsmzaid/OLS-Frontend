@@ -1,8 +1,7 @@
 import axios from 'axios';
-import Config from 'react-native-config';
 
-// const API_BASE_URL = Config.BACKEND_URL;
-const API_BASE_URL = 'http://192.168.211.200:3000';
+// const API_BASE_URL = 'https://ols-backend-hrxm.onrender.com';
+const API_BASE_URL = 'http://192.168.1.3:3001';
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -10,7 +9,6 @@ const api = axios.create({
   },
 });
 
-// Register user API
 export const registerUser = async (userData: {
   name: string;
   email: string;
@@ -21,22 +19,35 @@ export const registerUser = async (userData: {
     const response = await api.post('/user/register', userData);
     return response.data;
   } catch (error: any) {
-    if (error.response) {
-      throw new Error(error.response.data.message || 'Registration failed');
+    console.error('Error during registration:', error);
+    if (error.response && error.response.data) {
+      throw new Error(
+        error.response.data.message || 'An error occurred during registration.',
+      );
     }
     throw new Error('Network error. Please try again.');
   }
 };
 
-// Login user API
 export const loginUser = async (email: string, password: string) => {
   try {
     const response = await api.post('/user/login', {email, password});
     return response.data;
   } catch (error: any) {
-    if (error.response) {
-      throw new Error(error.response.data.message || 'Login failed');
+    if (error.response && error.response.data) {
+      const errorMessage = error.response.data.message;
+
+      if (errorMessage === 'This email is not registered. Please sign up.') {
+        throw new Error('This email is not registered. Please sign up.');
+      }
+
+      if (errorMessage === 'Incorrect password. Please try again.') {
+        throw new Error('Incorrect password. Please try again.');
+      }
+
+      throw new Error(errorMessage || 'An error occurred during login.');
     }
+
     throw new Error('Network error. Please try again.');
   }
 };

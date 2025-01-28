@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -6,8 +6,9 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
-  Alert,
 } from 'react-native';
+
+import Sidebar from '../../../components/Header-SideBar/Sidebar';
 
 type UserHomeProps = {
   navigation: {
@@ -16,43 +17,43 @@ type UserHomeProps = {
 };
 
 const UserHome: React.FC<UserHomeProps> = ({navigation}) => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const handleOrderHistory = () => {
     navigation.navigate('OrderHistory');
   };
 
-  const fetchOrders = async () => {
-    try {
-      const response = await fetch('https://api.example.com/orders', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = await response.json();
-      console.log('Orders:', data);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to fetch orders. Please try again later.');
-    }
-  };
-
   return (
     <View style={styles.container}>
+      {/* Sidebar Overlay */}
+      {isSidebarOpen && (
+        <View style={styles.sidebarOverlay}>
+          <Sidebar onClose={() => setIsSidebarOpen(false)} />
+        </View>
+      )}
       <View style={styles.header}>
         <View style={styles.header_nav}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setIsSidebarOpen(!isSidebarOpen)}
+            style={styles.menuButton}>
             <Image
-              source={require('../../../assets/icons/HomeMenu.png')}
+              source={
+                isSidebarOpen
+                  ? require('../../../assets/icons/close.png') // Cross Icon
+                  : require('../../../assets/icons/HomeMenu.png') // Menu Icon
+              }
               style={styles.icon}
             />
           </TouchableOpacity>
 
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
             <Image
               source={require('../../../assets/icons/HomeCart.png')}
               style={styles.icon}
             />
           </TouchableOpacity>
         </View>
+
         <View style={styles.welcomeContainer}>
           <Image
             source={require('../../../assets/images/userIcon.png')}
@@ -96,6 +97,7 @@ const UserHome: React.FC<UserHomeProps> = ({navigation}) => {
         </View>
       </View>
 
+      {/* Orders Section */}
       <ScrollView>
         <View style={styles.activeOrdersContainer}>
           <View style={styles.activeOrdersHeader}>
@@ -108,7 +110,6 @@ const UserHome: React.FC<UserHomeProps> = ({navigation}) => {
           </View>
 
           <View style={styles.ordersList}>
-            {/* Dummy orders for now, replace with backend data */}
             <View style={styles.orderCard}>
               <Text style={styles.orderNumber}>Order No: #00003</Text>
               <Text style={styles.orderStatus}>Order Placed</Text>
@@ -135,6 +136,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F9F9F9',
   },
+  sidebarOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    zIndex: 999,
+  },
   header: {
     backgroundColor: '#1398D0',
     borderBottomLeftRadius: 50,
@@ -147,6 +156,9 @@ const styles = StyleSheet.create({
   header_nav: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  menuButton: {
+    zIndex: 1000,
   },
   icon: {
     width: 40,

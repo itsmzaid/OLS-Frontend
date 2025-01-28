@@ -45,7 +45,7 @@ const UserLogin: React.FC<UserLoginProps> = ({navigation}) => {
     try {
       const response = await loginUser(email, password);
 
-      if (response.success) {
+      if (response.idToken) {
         navigation.navigate('UserHome');
       } else {
         Alert.alert(
@@ -53,8 +53,8 @@ const UserLogin: React.FC<UserLoginProps> = ({navigation}) => {
           'Please enter correct Email and Password.',
         );
       }
-    } catch (error) {
-      Alert.alert('Error', 'An error occurred. Please try again later.');
+    } catch (error: any) {
+      Alert.alert('Error', error.message);
     }
   };
 
@@ -103,8 +103,8 @@ const UserLogin: React.FC<UserLoginProps> = ({navigation}) => {
             <Image
               source={
                 showPassword
-                  ? require('../../../assets/icons/view.png') // "View" icon for showing the password
-                  : require('../../../assets/icons/hide.png') // "Hide" icon for hiding the password
+                  ? require('../../../assets/icons/view.png')
+                  : require('../../../assets/icons/hide.png')
               }
               style={styles.icon}
             />
