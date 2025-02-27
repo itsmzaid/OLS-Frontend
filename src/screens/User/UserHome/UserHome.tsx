@@ -20,18 +20,16 @@ type UserHomeProps = {
 
 const UserHome: React.FC<UserHomeProps> = ({navigation}) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  // Block the back button when on the home screen
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
       'hardwareBackPress',
       () => {
-        // Prevent back navigation on this screen
-        return true; // Returning true blocks the back action
+        return true;
       },
     );
 
     return () => {
-      backHandler.remove(); // Clean up on unmount
+      backHandler.remove();
     };
   }, []);
   const handleOrderHistory = () => {
@@ -83,30 +81,38 @@ const UserHome: React.FC<UserHomeProps> = ({navigation}) => {
       <View style={styles.servicesContainer}>
         <Text style={styles.servicesTitle}>Services</Text>
         <View style={styles.servicesIcons}>
-          <TouchableOpacity style={styles.serviceBox}>
+          <TouchableOpacity
+            style={styles.serviceBox}
+            onPress={() => navigation.navigate('Wash')}>
             <Image
               source={require('../../../assets/icons/wash.png')}
               style={styles.serviceIcon}
             />
             <Text style={styles.serviceText}>Wash</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.serviceBox}>
+          <TouchableOpacity
+            style={styles.serviceBox}
+            onPress={() => navigation.navigate('Iron')}>
             <Image
               source={require('../../../assets/icons/iron.png')}
               style={styles.serviceIcon}
             />
             <Text style={styles.serviceText}>Iron</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.serviceBox}>
+          <TouchableOpacity
+            style={styles.serviceBox}
+            onPress={() => navigation.navigate('DryClean')}>
             <Image
               source={require('../../../assets/icons/dry.png')}
               style={styles.serviceIcon}
             />
             <Text style={styles.serviceText}>Dry Clean</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.serviceBox}>
+          <TouchableOpacity
+            style={styles.serviceBox}
+            onPress={() => navigation.navigate('FullService')}>
             <Image
-              source={require('../../../assets/icons/wash_iron.png')}
+              source={require('../../../assets/icons/full_service.png')}
               style={styles.serviceIcon}
             />
             <Text style={styles.serviceText}>Full Clean</Text>
@@ -114,7 +120,6 @@ const UserHome: React.FC<UserHomeProps> = ({navigation}) => {
         </View>
       </View>
 
-      {/* Orders Section */}
       <ScrollView>
         <View style={styles.activeOrdersContainer}>
           <View style={styles.activeOrdersHeader}>

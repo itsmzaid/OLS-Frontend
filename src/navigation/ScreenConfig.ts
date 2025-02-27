@@ -7,6 +7,10 @@ import UserLogin from '../screens/User/UserLoginSignUp/UserLogin';
 import RiderLogin from '../screens/Rider/RiderLogin/RiderLogin';
 import RiderHome from '../screens/Rider/RiderHome/RiderHome';
 import UserHome from '../screens/User/UserHome/UserHome';
+import DryClean from '../screens/Services/DryClean';
+import FullService from '../screens/Services/FullService';
+import Iron from '../screens/Services/Iron';
+import Wash from '../screens/Services/Wash';
 
 export const screens = {
   Intropg1: {
@@ -43,6 +47,22 @@ export const screens = {
   },
   UserHome: {
     component: UserHome,
+    options: {headerShown: false},
+  },
+  DryClean: {
+    component: DryClean,
+    options: {headerShown: false},
+  },
+  FullService: {
+    component: FullService,
+    options: {headerShown: false},
+  },
+  Iron: {
+    component: Iron,
+    options: {headerShown: false},
+  },
+  Wash: {
+    component: Wash,
     options: {headerShown: false},
   },
 };
