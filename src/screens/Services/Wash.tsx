@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -9,54 +9,46 @@ import {
 } from 'react-native';
 import Header from '../../components/Header-SideBar/Header';
 
-type Service = {
+// Function to get an icon based on the product name
+const getIcon = (name: string) => {
+  const icons: {[key: string]: any} = {
+    Hoodie: require('../../assets/icons/hoodie.png'),
+    'T-Shirt': require('../../assets/icons/tshirt.png'),
+    Jean: require('../../assets/icons/jeans.png'),
+    Jacket: require('../../assets/icons/jacket.png'),
+    Towel: require('../../assets/icons/towel.png'),
+    Dress: require('../../assets/icons/dress.png'),
+  };
+  return icons[name] || require('../../assets/icons/hoodie.png');
+};
+
+type Product = {
   id: string;
   name: string;
   price: number;
-  image: any;
 };
 
-const services: Service[] = [
-  {
-    id: '1',
-    name: 'Hoodie',
-    price: 100,
-    image: require('../../assets/icons/hoodie.png'),
-  },
-  {
-    id: '2',
-    name: 'T-Shirt',
-    price: 80,
-    image: require('../../assets/icons/tshirt.png'),
-  },
-  {
-    id: '3',
-    name: 'Jean',
-    price: 120,
-    image: require('../../assets/icons/jeans.png'),
-  },
-  {
-    id: '4',
-    name: 'Jacket',
-    price: 250,
-    image: require('../../assets/icons/jacket.png'),
-  },
-  {
-    id: '5',
-    name: 'Towel',
-    price: 200,
-    image: require('../../assets/icons/towel.png'),
-  },
-  {
-    id: '6',
-    name: 'Dress',
-    price: 220,
-    image: require('../../assets/icons/dress.png'),
-  },
-];
-
 const Wash = ({navigation}: any) => {
+  const [products, setProducts] = useState<Product[]>([]);
   const [quantities, setQuantities] = useState<{[key: string]: number}>({});
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // Function to fetch products (Dummy for now)
+  const fetchProducts = async () => {
+    // Simulating backend response
+    const dummyData: Product[] = [
+      {id: '1', name: 'Hoodie', price: 100},
+      {id: '2', name: 'T-Shirt', price: 80},
+      {id: '3', name: 'Jean', price: 120},
+      {id: '4', name: 'Jacket', price: 250},
+      {id: '5', name: 'Towel', price: 200},
+      {id: '6', name: 'Dress', price: 220},
+    ];
+    setProducts(dummyData);
+  };
 
   const handleIncrease = (id: string) => {
     setQuantities(prev => ({...prev, [id]: (prev[id] || 0) + 1}));
@@ -66,9 +58,9 @@ const Wash = ({navigation}: any) => {
     setQuantities(prev => ({...prev, [id]: prev[id] > 0 ? prev[id] - 1 : 0}));
   };
 
-  const renderItem = ({item}: {item: Service}) => (
+  const renderItem = ({item}: {item: Product}) => (
     <View style={styles.itemContainer}>
-      <Image source={item.image} style={styles.itemImage} />
+      <Image source={getIcon(item.name)} style={styles.itemImage} />
       <View style={styles.itemDetails}>
         <Text style={styles.itemName}>{item.name}</Text>
         <Text style={styles.itemPrice}>RS: {item.price}</Text>
@@ -104,11 +96,13 @@ const Wash = ({navigation}: any) => {
         </View>
 
         <FlatList
-          data={services}
+          data={products}
           renderItem={renderItem}
           keyExtractor={item => item.id}
         />
-        <TouchableOpacity style={styles.pickupButton}>
+        <TouchableOpacity
+          style={styles.pickupButton}
+          onPress={() => navigation.navigate('DeliveryDetails')}>
           <Text style={styles.pickupButtonText}>Schedule a Pickup</Text>
         </TouchableOpacity>
       </View>

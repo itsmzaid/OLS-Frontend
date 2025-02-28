@@ -11,6 +11,8 @@ import DryClean from '../screens/Services/DryClean';
 import FullService from '../screens/Services/FullService';
 import Iron from '../screens/Services/Iron';
 import Wash from '../screens/Services/Wash';
+import DeliveryDetails from '../screens/Checkout/DeliveryDetail';
+import Cart from '../screens/Checkout/Cart';
 
 export const screens = {
   Intropg1: {
@@ -63,6 +65,14 @@ export const screens = {
   },
   Wash: {
     component: Wash,
+    options: {headerShown: false},
+  },
+  DeliveryDetails: {
+    component: DeliveryDetails,
+    options: {headerShown: false},
+  },
+  Cart: {
+    component: Cart,
     options: {headerShown: false},
   },
 };

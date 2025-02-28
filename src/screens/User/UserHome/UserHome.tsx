@@ -85,7 +85,7 @@ const UserHome: React.FC<UserHomeProps> = ({navigation}) => {
             style={styles.serviceBox}
             onPress={() => navigation.navigate('Wash')}>
             <Image
-              source={require('../../../assets/icons/wash.png')}
+              source={require('../../../assets/icons/wash1.png')}
               style={styles.serviceIcon}
             />
             <Text style={styles.serviceText}>Wash</Text>
@@ -94,7 +94,7 @@ const UserHome: React.FC<UserHomeProps> = ({navigation}) => {
             style={styles.serviceBox}
             onPress={() => navigation.navigate('Iron')}>
             <Image
-              source={require('../../../assets/icons/iron.png')}
+              source={require('../../../assets/icons/iron1.png')}
               style={styles.serviceIcon}
             />
             <Text style={styles.serviceText}>Iron</Text>
@@ -103,7 +103,7 @@ const UserHome: React.FC<UserHomeProps> = ({navigation}) => {
             style={styles.serviceBox}
             onPress={() => navigation.navigate('DryClean')}>
             <Image
-              source={require('../../../assets/icons/dry.png')}
+              source={require('../../../assets/icons/dry1.png')}
               style={styles.serviceIcon}
             />
             <Text style={styles.serviceText}>Dry Clean</Text>
@@ -112,7 +112,7 @@ const UserHome: React.FC<UserHomeProps> = ({navigation}) => {
             style={styles.serviceBox}
             onPress={() => navigation.navigate('FullService')}>
             <Image
-              source={require('../../../assets/icons/full_service.png')}
+              source={require('../../../assets/icons/fullwash1.png')}
               style={styles.serviceIcon}
             />
             <Text style={styles.serviceText}>Full Clean</Text>
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   },
   serviceText: {
     fontSize: 14,
-    color: '#1398D0',
+    color: '#004E70',
     fontFamily: 'Montserrat-Regular',
     textAlign: 'center',
   },
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   },
   activeOrdersTitle: {
     fontSize: 22,
-    color: '#1398D0',
+    color: '#004E70',
     fontFamily: 'Montserrat-Bold',
   },
   orderHistoryButton: {
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   },
   orderStatus: {
     fontSize: 14,
-    color: '#6C6C6C',
+    color: '#004E70',
     fontFamily: 'Montserrat-Regular',
     marginTop: 5,
   },
