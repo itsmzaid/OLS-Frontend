@@ -8,18 +8,23 @@ import {
   StyleSheet,
 } from 'react-native';
 import Header from '../../components/Header-SideBar/Header';
+import {fetchServiceItems} from '../../api/items';
 
-// Function to get an icon based on the product name
+const capitalizeFirstLetter = (str: string) => {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
+
 const getIcon = (name: string) => {
   const icons: {[key: string]: any} = {
-    Hoodie: require('../../assets/icons/hoodie.png'),
-    'T-Shirt': require('../../assets/icons/tshirt.png'),
-    Jean: require('../../assets/icons/jeans.png'),
-    Jacket: require('../../assets/icons/jacket.png'),
-    Towel: require('../../assets/icons/towel.png'),
-    Dress: require('../../assets/icons/dress.png'),
+    hoodie: require('../../assets/icons/hoodie.png'),
+    't-shirt': require('../../assets/icons/tshirt.png'),
+    jean: require('../../assets/icons/jeans.png'),
+    jacket: require('../../assets/icons/jacket.png'),
+    towel: require('../../assets/icons/towel.png'),
+    dress: require('../../assets/icons/dress.png'),
   };
-  return icons[name] || require('../../assets/icons/hoodie.png');
+
+  return icons[name.toLowerCase()] || require('../../assets/icons/hoodie.png');
 };
 
 type Product = {
@@ -33,21 +38,17 @@ const Wash = ({navigation}: any) => {
   const [quantities, setQuantities] = useState<{[key: string]: number}>({});
 
   useEffect(() => {
-    fetchProducts();
+    loadProducts();
   }, []);
 
-  // Function to fetch products (Dummy for now)
-  const fetchProducts = async () => {
-    // Simulating backend response
-    const dummyData: Product[] = [
-      {id: '1', name: 'Hoodie', price: 100},
-      {id: '2', name: 'T-Shirt', price: 80},
-      {id: '3', name: 'Jean', price: 120},
-      {id: '4', name: 'Jacket', price: 250},
-      {id: '5', name: 'Towel', price: 200},
-      {id: '6', name: 'Dress', price: 220},
-    ];
-    setProducts(dummyData);
+  // ✅ Backend se "wash" service ki items fetch karega
+  const loadProducts = async () => {
+    try {
+      const data = await fetchServiceItems('wash');
+      setProducts(data);
+    } catch (error) {
+      console.error('Failed to load products:', error);
+    }
   };
 
   const handleIncrease = (id: string) => {
@@ -62,7 +63,7 @@ const Wash = ({navigation}: any) => {
     <View style={styles.itemContainer}>
       <Image source={getIcon(item.name)} style={styles.itemImage} />
       <View style={styles.itemDetails}>
-        <Text style={styles.itemName}>{item.name}</Text>
+        <Text style={styles.itemName}>{capitalizeFirstLetter(item.name)}</Text>
         <Text style={styles.itemPrice}>RS: {item.price}</Text>
       </View>
       <View style={styles.counterContainer}>

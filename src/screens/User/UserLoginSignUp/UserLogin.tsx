@@ -8,7 +8,7 @@ import {
   Image,
   Alert,
 } from 'react-native';
-import {loginUser} from '../../../utils/api';
+import {loginUser} from '../../../api/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type UserLoginProps = {

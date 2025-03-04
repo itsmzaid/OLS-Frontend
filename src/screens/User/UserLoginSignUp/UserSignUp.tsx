@@ -8,7 +8,7 @@ import {
   Image,
   Alert,
 } from 'react-native';
-import {registerUser} from '../../../utils/api';
+import {registerUser} from '../../../api/auth';
 
 type UserSignUpProps = {
   navigation: {

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -8,55 +8,48 @@ import {
   StyleSheet,
 } from 'react-native';
 import Header from '../../components/Header-SideBar/Header';
+import {fetchServiceItems} from '../../api/items';
 
-type Service = {
+// ✅ Case-insensitive icon fetching & name formatting
+const getIcon = (name: string) => {
+  const icons: {[key: string]: any} = {
+    hoodie: require('../../assets/icons/hoodie.png'),
+    't-shirt': require('../../assets/icons/tshirt.png'),
+    jean: require('../../assets/icons/jeans.png'),
+    jacket: require('../../assets/icons/jacket.png'),
+    towel: require('../../assets/icons/towel.png'),
+    dress: require('../../assets/icons/dress.png'),
+  };
+
+  return icons[name.toLowerCase()] || require('../../assets/icons/hoodie.png');
+};
+
+const formatName = (name: string) =>
+  name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+
+type Product = {
   id: string;
   name: string;
   price: number;
-  image: any;
 };
 
-const services: Service[] = [
-  {
-    id: '1',
-    name: 'Hoodie',
-    price: 100,
-    image: require('../../assets/icons/hoodie.png'),
-  },
-  {
-    id: '2',
-    name: 'T-Shirt',
-    price: 80,
-    image: require('../../assets/icons/tshirt.png'),
-  },
-  {
-    id: '3',
-    name: 'Jean',
-    price: 120,
-    image: require('../../assets/icons/jeans.png'),
-  },
-  {
-    id: '4',
-    name: 'Jacket',
-    price: 250,
-    image: require('../../assets/icons/jacket.png'),
-  },
-  {
-    id: '5',
-    name: 'Towel',
-    price: 200,
-    image: require('../../assets/icons/towel.png'),
-  },
-  {
-    id: '6',
-    name: 'Dress',
-    price: 220,
-    image: require('../../assets/icons/dress.png'),
-  },
-];
-
 const Iron = ({navigation}: any) => {
+  const [products, setProducts] = useState<Product[]>([]);
   const [quantities, setQuantities] = useState<{[key: string]: number}>({});
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  // ✅ Backend se "iron" service ki items fetch karega
+  const loadProducts = async () => {
+    try {
+      const data = await fetchServiceItems('iron');
+      setProducts(data);
+    } catch (error) {
+      console.error('Failed to load products:', error);
+    }
+  };
 
   const handleIncrease = (id: string) => {
     setQuantities(prev => ({...prev, [id]: (prev[id] || 0) + 1}));
@@ -66,52 +59,11 @@ const Iron = ({navigation}: any) => {
     setQuantities(prev => ({...prev, [id]: prev[id] > 0 ? prev[id] - 1 : 0}));
   };
 
-  const handleSchedulePickup = async () => {
-    const selectedItems = Object.entries(quantities)
-      .filter(([_, quantity]) => quantity > 0)
-      .map(([id, quantity]) => {
-        const service = services.find(service => service.id === id);
-        return service
-          ? {id: service.id, name: service.name, price: service.price, quantity}
-          : null;
-      })
-      .filter(item => item !== null);
-
-    if (selectedItems.length === 0) {
-      alert('Please select at least one item before scheduling a pickup.');
-      return;
-    }
-
-    try {
-      const response = await fetch('https://your-backend-api.com/Order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          items: selectedItems,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        alert('Order placed successfully!');
-        navigation.navigate('DeliveryDetails', {selectedItems});
-      } else {
-        alert(`Failed to Place Order: ${result.message}`);
-      }
-    } catch (error) {
-      console.error('Error placing order:', error);
-      alert('Something went wrong. Please try again.');
-    }
-  };
-
-  const renderItem = ({item}: {item: Service}) => (
+  const renderItem = ({item}: {item: Product}) => (
     <View style={styles.itemContainer}>
-      <Image source={item.image} style={styles.itemImage} />
+      <Image source={getIcon(item.name)} style={styles.itemImage} />
       <View style={styles.itemDetails}>
-        <Text style={styles.itemName}>{item.name}</Text>
+        <Text style={styles.itemName}>{formatName(item.name)}</Text>
         <Text style={styles.itemPrice}>RS: {item.price}</Text>
       </View>
       <View style={styles.counterContainer}>
@@ -145,7 +97,7 @@ const Iron = ({navigation}: any) => {
         </View>
 
         <FlatList
-          data={services}
+          data={products}
           renderItem={renderItem}
           keyExtractor={item => item.id}
         />
@@ -249,6 +201,3 @@ const styles = StyleSheet.create({
 });
 
 export default Iron;
-function alert(arg0: string) {
-  throw new Error('Function not implemented.');
-}

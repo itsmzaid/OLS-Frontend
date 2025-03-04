@@ -22,7 +22,7 @@ const AppNavigator = () => {
 
   return (
     <Stack.Navigator
-      initialRouteName={isAuthenticated ? 'UserHome' : 'UserHome'}
+      initialRouteName={isAuthenticated ? 'UserHome' : 'UserLogin'}
       screenOptions={{
         headerShown: false,
         gestureEnabled: false, // Disable swipe gestures to go back
