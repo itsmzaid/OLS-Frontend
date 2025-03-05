@@ -18,21 +18,12 @@ type UserLoginProps = {
 };
 
 const UserLogin: React.FC<UserLoginProps> = ({navigation}) => {
-  const [formData, setFormData] = useState<{
-    email: string;
-    password: string;
-  }>({
-    email: '',
-    password: '',
-  });
-
+  const [formData, setFormData] = useState({email: '', password: ''});
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false); // ✅ Loading state
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData(prev => ({...prev, [field]: value}));
   };
 
   const handleLogin = async () => {
@@ -43,12 +34,15 @@ const UserLogin: React.FC<UserLoginProps> = ({navigation}) => {
       return;
     }
 
+    setLoading(true); // ✅ Start loading
     try {
       const response = await loginUser(email, password);
 
       if (response.idToken) {
-        // Store the token in AsyncStorage
+        // ✅ Token store karna
         await AsyncStorage.setItem('userToken', response.idToken);
+        console.log('Token stored successfully');
+
         navigation.navigate('UserHome');
       } else {
         Alert.alert(
@@ -58,8 +52,11 @@ const UserLogin: React.FC<UserLoginProps> = ({navigation}) => {
       }
     } catch (error: any) {
       Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false); // ✅ Stop loading
     }
   };
+
   return (
     <View style={styles.container}>
       <Image
@@ -120,8 +117,10 @@ const UserLogin: React.FC<UserLoginProps> = ({navigation}) => {
           {opacity: formData.email && formData.password ? 1 : 0.7},
         ]}
         onPress={handleLogin}
-        disabled={!formData.email || !formData.password}>
-        <Text style={styles.loginButtonText}>Login</Text>
+        disabled={!formData.email || !formData.password || loading}>
+        <Text style={styles.loginButtonText}>
+          {loading ? 'Logging in...' : 'Login'}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -177,7 +176,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#1398D0',
     paddingVertical: 10,
-    paddingHorizontal: 0,
     fontSize: 16,
     color: '#1398D0',
     fontFamily: 'Montserrat-Regular',

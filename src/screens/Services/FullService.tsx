@@ -44,8 +44,13 @@ const FullService = ({navigation}: any) => {
   // ✅ Backend se "fullwash" service ki items fetch karega
   const loadProducts = async () => {
     try {
-      const data = await fetchServiceItems('fullwash');
-      setProducts(data);
+      const data = await fetchServiceItems('wash');
+      const updatedData = data.map((item: any, index: number) => ({
+        ...item,
+        id: item.id ? String(item.id) : `temp-${index}`, // Fallback id
+      }));
+
+      setProducts(updatedData);
     } catch (error) {
       console.error('Failed to load products:', error);
     }

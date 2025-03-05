@@ -41,11 +41,15 @@ const Wash = ({navigation}: any) => {
     loadProducts();
   }, []);
 
-  // ✅ Backend se "wash" service ki items fetch karega
   const loadProducts = async () => {
     try {
       const data = await fetchServiceItems('wash');
-      setProducts(data);
+      const updatedData = data.map((item: any, index: number) => ({
+        ...item,
+        id: item.id ? String(item.id) : `temp-${index}`, // Fallback id
+      }));
+
+      setProducts(updatedData);
     } catch (error) {
       console.error('Failed to load products:', error);
     }
@@ -99,8 +103,9 @@ const Wash = ({navigation}: any) => {
         <FlatList
           data={products}
           renderItem={renderItem}
-          keyExtractor={item => item.id}
+          keyExtractor={item => item.id} // ✅ Ensured unique key
         />
+
         <TouchableOpacity
           style={styles.pickupButton}
           onPress={() => navigation.navigate('DeliveryDetails')}>

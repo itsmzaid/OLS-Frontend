@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Header from '../../components/Header-SideBar/Header';
+import {getUserData} from '../../api/user'; // ✅ Import API call
 
 const DeliveryDetails = ({navigation}: any) => {
   const [formData, setFormData] = useState({
@@ -26,6 +27,25 @@ const DeliveryDetails = ({navigation}: any) => {
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+
+  // ✅ Fetch user data from backend
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = await getUserData();
+        setFormData(prev => ({
+          ...prev,
+          email: userData.email,
+          name: userData.name,
+          phone: userData.phoneNo,
+        }));
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const handleChange = (key: string, value: any) => {
     setFormData({...formData, [key]: value});
@@ -60,14 +80,14 @@ const DeliveryDetails = ({navigation}: any) => {
                 placeholder="Email"
                 placeholderTextColor="#000"
                 value={formData.email}
-                onChangeText={text => handleChange('email', text)}
+                editable={false} // ✅ Non-editable (Fetched from backend)
               />
               <TextInput
                 style={[styles.input, styles.shadow]}
                 placeholder="Name"
                 placeholderTextColor="#000"
                 value={formData.name}
-                onChangeText={text => handleChange('name', text)}
+                editable={false} // ✅ Non-editable (Fetched from backend)
               />
               <TextInput
                 style={[styles.input, styles.shadow]}
@@ -82,7 +102,7 @@ const DeliveryDetails = ({navigation}: any) => {
                 placeholderTextColor="#000"
                 keyboardType="numeric"
                 value={formData.phone}
-                onChangeText={text => handleChange('phone', text)}
+                editable={false} // ✅ Non-editable (Fetched from backend)
               />
 
               {/* Pickup Date */}

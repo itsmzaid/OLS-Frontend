@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = 'http://192.168.10.5:3001';
+const API_BASE_URL = 'http://192.168.10.9:3001';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -10,11 +10,11 @@ const api = axios.create({
   },
 });
 
-// ✅ Request Interceptor: Adds Auth Token
+// ✅ Request Interceptor: Automatically Adds Auth Token
 api.interceptors.request.use(async config => {
   const token = await AsyncStorage.getItem('userToken');
   if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`;
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
