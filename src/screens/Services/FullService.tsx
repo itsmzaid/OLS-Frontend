@@ -41,13 +41,12 @@ const FullService = ({navigation}: any) => {
     loadProducts();
   }, []);
 
-  // ✅ Backend se "fullwash" service ki items fetch karega
   const loadProducts = async () => {
     try {
-      const data = await fetchServiceItems('wash');
+      const data = await fetchServiceItems('fullwash');
       const updatedData = data.map((item: any, index: number) => ({
         ...item,
-        id: item.id ? String(item.id) : `temp-${index}`, // Fallback id
+        id: item.id ? String(item.id) : `temp-${index}`,
       }));
 
       setProducts(updatedData);
@@ -63,6 +62,8 @@ const FullService = ({navigation}: any) => {
   const handleDecrease = (id: string) => {
     setQuantities(prev => ({...prev, [id]: prev[id] > 0 ? prev[id] - 1 : 0}));
   };
+
+  const isPickupEnabled = Object.values(quantities).some(qty => qty >= 1);
 
   const renderItem = ({item}: {item: Product}) => (
     <View style={styles.itemContainer}>
@@ -107,8 +108,16 @@ const FullService = ({navigation}: any) => {
           keyExtractor={item => item.id}
         />
         <TouchableOpacity
-          style={styles.pickupButton}
-          onPress={() => navigation.navigate('DeliveryDetails')}>
+          style={[
+            styles.pickupButton,
+            !isPickupEnabled && styles.disabledButton,
+          ]}
+          onPress={() => {
+            if (isPickupEnabled) {
+              navigation.navigate('DeliveryDetails');
+            }
+          }}
+          disabled={!isPickupEnabled}>
           <Text style={styles.pickupButtonText}>Schedule a Pickup</Text>
         </TouchableOpacity>
       </View>
@@ -190,6 +199,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Montserrat-Bold',
     color: '#1398D0',
+  },
+  disabledButton: {
+    backgroundColor: '#A9A9A9',
   },
   pickupButton: {
     backgroundColor: '#1398D0',

@@ -10,10 +10,9 @@ import {
 } from 'react-native';
 
 const RiderHome = () => {
-  const [selectedTab, setSelectedTab] = useState('Pickup'); // Default to Pickup tab
+  const [selectedTab, setSelectedTab] = useState('Pickup');
   const [statusTab, setStatusTab] = useState('Active');
 
-  // Dummy data for orders
   const pickupOrders = [
     {id: '1001', description: 'Pickup from Restaurant A'},
     {id: '1002', description: 'Pickup from Shop B'},
@@ -36,7 +35,6 @@ const RiderHome = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header Section */}
       <View style={styles.header}>
         <View style={styles.headerNav}>
           <TouchableOpacity>
@@ -67,7 +65,6 @@ const RiderHome = () => {
             {statusTab === 'Active' ? 'Rs 948.48' : 'Rs -----'}
           </Text>
         </View>
-        {/* Tabs Section */}
         <View style={styles.tabsContainer}>
           <View style={styles.tabsRow}>
             <TouchableOpacity
@@ -125,7 +122,6 @@ const RiderHome = () => {
         </View>
       </View>
 
-      {/* Orders Section */}
       <View style={styles.ordersContainer}>
         <Text style={styles.ordersTitle}>
           {selectedTab === 'Pickup' ? 'Pickup Orders' : 'Delivery Orders'}

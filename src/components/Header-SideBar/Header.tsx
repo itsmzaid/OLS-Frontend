@@ -27,8 +27,8 @@ const Header: React.FC<HeaderProps> = ({navigation}) => {
           <Image
             source={
               isSidebarOpen
-                ? require('../../assets/icons/close.png') // Cross Icon when open
-                : require('../../assets/icons/menu.png') // Menu Icon when closed
+                ? require('../../assets/icons/close.png')
+                : require('../../assets/icons/menu.png')
             }
             style={styles.icon}
           />

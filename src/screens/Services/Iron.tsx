@@ -10,7 +10,6 @@ import {
 import Header from '../../components/Header-SideBar/Header';
 import {fetchServiceItems} from '../../api/items';
 
-// ✅ Case-insensitive icon fetching & name formatting
 const getIcon = (name: string) => {
   const icons: {[key: string]: any} = {
     hoodie: require('../../assets/icons/hoodie.png'),
@@ -41,13 +40,12 @@ const Iron = ({navigation}: any) => {
     loadProducts();
   }, []);
 
-  // ✅ Backend se "iron" service ki items fetch karega
   const loadProducts = async () => {
     try {
-      const data = await fetchServiceItems('wash');
+      const data = await fetchServiceItems('iron');
       const updatedData = data.map((item: any, index: number) => ({
         ...item,
-        id: item.id ? String(item.id) : `temp-${index}`, // Fallback id
+        id: item.id ? String(item.id) : `temp-${index}`,
       }));
 
       setProducts(updatedData);
@@ -63,6 +61,8 @@ const Iron = ({navigation}: any) => {
   const handleDecrease = (id: string) => {
     setQuantities(prev => ({...prev, [id]: prev[id] > 0 ? prev[id] - 1 : 0}));
   };
+
+  const isPickupEnabled = Object.values(quantities).some(qty => qty >= 1);
 
   const renderItem = ({item}: {item: Product}) => (
     <View style={styles.itemContainer}>
@@ -106,9 +106,18 @@ const Iron = ({navigation}: any) => {
           renderItem={renderItem}
           keyExtractor={item => item.id}
         />
+
         <TouchableOpacity
-          style={styles.pickupButton}
-          onPress={() => navigation.navigate('DeliveryDetails')}>
+          style={[
+            styles.pickupButton,
+            !isPickupEnabled && styles.disabledButton,
+          ]}
+          onPress={() => {
+            if (isPickupEnabled) {
+              navigation.navigate('DeliveryDetails');
+            }
+          }}
+          disabled={!isPickupEnabled}>
           <Text style={styles.pickupButtonText}>Schedule a Pickup</Text>
         </TouchableOpacity>
       </View>
@@ -197,6 +206,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 10,
+  },
+  disabledButton: {
+    backgroundColor: '#A9A9A9',
   },
   pickupButtonText: {
     color: '#fff',

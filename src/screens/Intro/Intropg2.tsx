@@ -14,22 +14,20 @@ const Intropg2 = ({navigation}: any) => {
       <Text style={styles.heading}>Continue As</Text>
 
       <View style={styles.buttonContainer}>
-        {/* User Button with Custom Icon */}
         <TouchableOpacity
           style={styles.button}
           onPress={() => navigation.navigate('UserStart')}>
           <Image
-            source={require('../../assets/images/userIcon.png')} // Replace with your custom icon path
+            source={require('../../assets/images/userIcon.png')}
             style={styles.icon}
           />
         </TouchableOpacity>
 
-        {/* Rider Button with Custom Icon */}
         <TouchableOpacity
           style={styles.button}
           onPress={() => navigation.navigate('RiderStart')}>
           <Image
-            source={require('../../assets/images/riderIcon.png')} // Replace with your custom icon path
+            source={require('../../assets/images/riderIcon.png')}
             style={styles.icon}
           />
         </TouchableOpacity>

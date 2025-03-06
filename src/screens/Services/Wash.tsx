@@ -46,7 +46,7 @@ const Wash = ({navigation}: any) => {
       const data = await fetchServiceItems('wash');
       const updatedData = data.map((item: any, index: number) => ({
         ...item,
-        id: item.id ? String(item.id) : `temp-${index}`, // Fallback id
+        id: item.id ? String(item.id) : `temp-${index}`,
       }));
 
       setProducts(updatedData);
@@ -62,6 +62,8 @@ const Wash = ({navigation}: any) => {
   const handleDecrease = (id: string) => {
     setQuantities(prev => ({...prev, [id]: prev[id] > 0 ? prev[id] - 1 : 0}));
   };
+
+  const isPickupEnabled = Object.values(quantities).some(qty => qty >= 1);
 
   const renderItem = ({item}: {item: Product}) => (
     <View style={styles.itemContainer}>
@@ -103,12 +105,20 @@ const Wash = ({navigation}: any) => {
         <FlatList
           data={products}
           renderItem={renderItem}
-          keyExtractor={item => item.id} // ✅ Ensured unique key
+          keyExtractor={item => item.id}
         />
 
         <TouchableOpacity
-          style={styles.pickupButton}
-          onPress={() => navigation.navigate('DeliveryDetails')}>
+          style={[
+            styles.pickupButton,
+            !isPickupEnabled && styles.disabledButton,
+          ]}
+          onPress={() => {
+            if (isPickupEnabled) {
+              navigation.navigate('DeliveryDetails');
+            }
+          }}
+          disabled={!isPickupEnabled}>
           <Text style={styles.pickupButtonText}>Schedule a Pickup</Text>
         </TouchableOpacity>
       </View>
@@ -197,6 +207,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 10,
+  },
+  disabledButton: {
+    backgroundColor: '#A0A0A0',
   },
   pickupButtonText: {
     color: '#fff',

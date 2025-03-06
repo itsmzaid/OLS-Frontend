@@ -54,8 +54,8 @@ const UserHome: React.FC<UserHomeProps> = ({navigation}) => {
             <Image
               source={
                 isSidebarOpen
-                  ? require('../../../assets/icons/close.png') // Cross Icon
-                  : require('../../../assets/icons/HomeMenu.png') // Menu Icon
+                  ? require('../../../assets/icons/close.png')
+                  : require('../../../assets/icons/HomeMenu.png')
               }
               style={styles.icon}
             />

@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import Header from '../../components/Header-SideBar/Header';
 
-// Function to get an icon based on the product name
 const getIcon = (name: string) => {
   const icons: {[key: string]: any} = {
     Hoodie: require('../../assets/icons/hoodie.png'),
@@ -38,10 +37,8 @@ const Cart = ({navigation}: any) => {
     fetchCartItems();
   }, []);
 
-  // Fetch cart data from backend (Dummy for now)
   const fetchCartItems = async () => {
     try {
-      // Simulating backend response
       const dummyData: CartItem[] = [
         {id: '1', name: 'T-Shirt', type: 'Wash', price: 180, quantity: 3},
         {id: '2', name: 'Dress', type: 'Iron', price: 240, quantity: 2},
@@ -53,11 +50,9 @@ const Cart = ({navigation}: any) => {
     }
   };
 
-  // Function to update quantity in backend (Simulated)
   const updateCartInBackend = async (id: string, newQuantity: number) => {
     try {
       console.log(`Updating cart item ${id} to quantity ${newQuantity}`);
-      // Simulating a backend update
     } catch (error) {
       Alert.alert('Error', 'Failed to update quantity');
     }

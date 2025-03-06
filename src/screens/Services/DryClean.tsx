@@ -10,10 +10,6 @@ import {
 import Header from '../../components/Header-SideBar/Header';
 import {fetchServiceItems} from '../../api/items';
 
-const capitalizeFirstLetter = (str: string) => {
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-};
-
 const getIcon = (name: string) => {
   const icons: {[key: string]: any} = {
     hoodie: require('../../assets/icons/hoodie.png'),
@@ -26,6 +22,9 @@ const getIcon = (name: string) => {
 
   return icons[name.toLowerCase()] || require('../../assets/icons/hoodie.png');
 };
+
+const formatName = (name: string) =>
+  name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
 
 type Product = {
   id: string;
@@ -41,13 +40,12 @@ const DryClean = ({navigation}: any) => {
     loadProducts();
   }, []);
 
-  // ✅ Backend se "dryclean" service ki items fetch karega
   const loadProducts = async () => {
     try {
-      const data = await fetchServiceItems('wash');
+      const data = await fetchServiceItems('dryclean');
       const updatedData = data.map((item: any, index: number) => ({
         ...item,
-        id: item.id ? String(item.id) : `temp-${index}`, // Fallback id
+        id: item.id ? String(item.id) : `temp-${index}`,
       }));
 
       setProducts(updatedData);
@@ -64,11 +62,13 @@ const DryClean = ({navigation}: any) => {
     setQuantities(prev => ({...prev, [id]: prev[id] > 0 ? prev[id] - 1 : 0}));
   };
 
+  const isPickupEnabled = Object.values(quantities).some(qty => qty >= 1);
+
   const renderItem = ({item}: {item: Product}) => (
     <View style={styles.itemContainer}>
       <Image source={getIcon(item.name)} style={styles.itemImage} />
       <View style={styles.itemDetails}>
-        <Text style={styles.itemName}>{capitalizeFirstLetter(item.name)}</Text>
+        <Text style={styles.itemName}>{formatName(item.name)}</Text>
         <Text style={styles.itemPrice}>RS: {item.price}</Text>
       </View>
       <View style={styles.counterContainer}>
@@ -107,8 +107,16 @@ const DryClean = ({navigation}: any) => {
           keyExtractor={item => item.id}
         />
         <TouchableOpacity
-          style={styles.pickupButton}
-          onPress={() => navigation.navigate('DeliveryDetails')}>
+          style={[
+            styles.pickupButton,
+            !isPickupEnabled && styles.disabledButton,
+          ]}
+          onPress={() => {
+            if (isPickupEnabled) {
+              navigation.navigate('DeliveryDetails');
+            }
+          }}
+          disabled={!isPickupEnabled}>
           <Text style={styles.pickupButtonText}>Schedule a Pickup</Text>
         </TouchableOpacity>
       </View>
@@ -190,6 +198,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Montserrat-Bold',
     color: '#1398D0',
+  },
+  disabledButton: {
+    backgroundColor: '#A9A9A9',
   },
   pickupButton: {
     backgroundColor: '#1398D0',

@@ -20,7 +20,7 @@ type UserLoginProps = {
 const UserLogin: React.FC<UserLoginProps> = ({navigation}) => {
   const [formData, setFormData] = useState({email: '', password: ''});
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false); // ✅ Loading state
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({...prev, [field]: value}));
@@ -34,12 +34,11 @@ const UserLogin: React.FC<UserLoginProps> = ({navigation}) => {
       return;
     }
 
-    setLoading(true); // ✅ Start loading
+    setLoading(true);
     try {
       const response = await loginUser(email, password);
 
       if (response.idToken) {
-        // ✅ Token store karna
         await AsyncStorage.setItem('userToken', response.idToken);
         console.log('Token stored successfully');
 
@@ -53,7 +52,7 @@ const UserLogin: React.FC<UserLoginProps> = ({navigation}) => {
     } catch (error: any) {
       Alert.alert('Error', error.message);
     } finally {
-      setLoading(false); // ✅ Stop loading
+      setLoading(false);
     }
   };
 

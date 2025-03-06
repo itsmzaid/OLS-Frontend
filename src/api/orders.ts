@@ -1,6 +1,5 @@
 import api from './api';
 
-// ✅ Place a new order
 export const placeOrder = async (orderData: {
   userId: string;
   totalAmount: number;
@@ -20,7 +19,6 @@ export const placeOrder = async (orderData: {
   }
 };
 
-// ✅ Get all orders for a user
 export const fetchUserOrders = async (userId: string) => {
   try {
     const response = await api.get(`/orders/user/${userId}`);

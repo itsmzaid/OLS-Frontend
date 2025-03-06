@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Header from '../../components/Header-SideBar/Header';
-import {getUserData} from '../../api/user'; // ✅ Import API call
+import {getUserData} from '../../api/user';
 
 const DeliveryDetails = ({navigation}: any) => {
   const [formData, setFormData] = useState({
@@ -28,7 +28,6 @@ const DeliveryDetails = ({navigation}: any) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
-  // ✅ Fetch user data from backend
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -61,7 +60,6 @@ const DeliveryDetails = ({navigation}: any) => {
           keyboardShouldPersistTaps="handled">
           <Header navigation={navigation} />
 
-          {/* Back Button & Title */}
           <View style={styles.Subcontainer}>
             <View style={styles.titleContainer}>
               <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -73,21 +71,20 @@ const DeliveryDetails = ({navigation}: any) => {
               <Text style={styles.title}>Delivery Details</Text>
             </View>
 
-            {/* Input Fields */}
             <View style={styles.form}>
               <TextInput
                 style={[styles.input, styles.shadow]}
                 placeholder="Email"
                 placeholderTextColor="#000"
                 value={formData.email}
-                editable={false} // ✅ Non-editable (Fetched from backend)
+                editable={false}
               />
               <TextInput
                 style={[styles.input, styles.shadow]}
                 placeholder="Name"
                 placeholderTextColor="#000"
                 value={formData.name}
-                editable={false} // ✅ Non-editable (Fetched from backend)
+                editable={false}
               />
               <TextInput
                 style={[styles.input, styles.shadow]}
@@ -102,7 +99,7 @@ const DeliveryDetails = ({navigation}: any) => {
                 placeholderTextColor="#000"
                 keyboardType="numeric"
                 value={formData.phone}
-                editable={false} // ✅ Non-editable (Fetched from backend)
+                editable={false}
               />
 
               {/* Pickup Date */}
@@ -129,7 +126,6 @@ const DeliveryDetails = ({navigation}: any) => {
                 />
               )}
 
-              {/* Pickup Time */}
               <TouchableOpacity
                 style={[styles.inputWithIcon, styles.shadow]}
                 onPress={() => setShowTimePicker(true)}>
@@ -156,7 +152,6 @@ const DeliveryDetails = ({navigation}: any) => {
             </View>
           </View>
 
-          {/* Checkout Button */}
           <View style={styles.footer}>
             <TouchableOpacity
               style={styles.checkoutButton}

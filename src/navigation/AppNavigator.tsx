@@ -1,7 +1,7 @@
 import {createStackNavigator} from '@react-navigation/stack';
 import {screens} from './ScreenConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 import {useFocusEffect} from '@react-navigation/native';
 import {View, ActivityIndicator} from 'react-native';
 

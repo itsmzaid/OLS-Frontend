@@ -1,6 +1,5 @@
 import api from './api';
 
-// ✅ Fetch Items of a Specific Service
 export const fetchServiceItems = async (serviceName: string) => {
   try {
     const response = await api.get(
