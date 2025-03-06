@@ -50,6 +50,12 @@ const DeliveryDetails = ({navigation}: any) => {
     setFormData({...formData, [key]: value});
   };
 
+  const isFormValid =
+    formData.email &&
+    formData.name &&
+    formData.phone &&
+    formData.address.trim() !== '';
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -77,14 +83,12 @@ const DeliveryDetails = ({navigation}: any) => {
                 placeholder="Email"
                 placeholderTextColor="#000"
                 value={formData.email}
-                editable={false}
               />
               <TextInput
                 style={[styles.input, styles.shadow]}
                 placeholder="Name"
                 placeholderTextColor="#000"
                 value={formData.name}
-                editable={false}
               />
               <TextInput
                 style={[styles.input, styles.shadow]}
@@ -99,10 +103,8 @@ const DeliveryDetails = ({navigation}: any) => {
                 placeholderTextColor="#000"
                 keyboardType="numeric"
                 value={formData.phone}
-                editable={false}
               />
 
-              {/* Pickup Date */}
               <TouchableOpacity
                 style={[styles.inputWithIcon, styles.shadow]}
                 onPress={() => setShowDatePicker(true)}>
@@ -154,8 +156,16 @@ const DeliveryDetails = ({navigation}: any) => {
 
           <View style={styles.footer}>
             <TouchableOpacity
-              style={styles.checkoutButton}
-              onPress={() => navigation.navigate('Cart')}>
+              style={[
+                styles.checkoutButton,
+                !isFormValid && styles.disabledButton,
+              ]}
+              onPress={() => {
+                if (isFormValid) {
+                  navigation.navigate('Cart');
+                }
+              }}
+              disabled={!isFormValid}>
               <Text style={styles.checkoutText}>Checkout ➤</Text>
             </TouchableOpacity>
           </View>
@@ -244,6 +254,9 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 18,
     fontFamily: 'Montserrat-Bold',
+  },
+  disabledButton: {
+    backgroundColor: '#A9A9A9',
   },
 });
 
