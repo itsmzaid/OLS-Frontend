@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   mask: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: '#38B5EA',
-    opacity: 0.1,
+    opacity: 0,
   },
   topImage: {
     width: '100%',

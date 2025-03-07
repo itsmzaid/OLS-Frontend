@@ -9,6 +9,8 @@ import {
   Alert,
 } from 'react-native';
 import {registerUser} from '../../../api/auth';
+import {loginUser} from '../../../api/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type UserSignUpProps = {
   navigation: {
@@ -52,6 +54,8 @@ const UserSignUp: React.FC<UserSignUpProps> = ({navigation}) => {
         formattedPhoneNo.length === 10
       ) {
         formattedPhoneNo = '+92' + formattedPhoneNo;
+      } else if (formattedPhoneNo.startsWith('92')) {
+        formattedPhoneNo = '+92' + formattedPhoneNo.slice(2);
       }
 
       setFormData(prev => ({
@@ -108,11 +112,19 @@ const UserSignUp: React.FC<UserSignUpProps> = ({navigation}) => {
         phoneNo,
         password,
       };
+      await registerUser(signUpData);
+      const response = await loginUser(email, password);
 
-      console.log('Sending signup data to backend:', signUpData);
-      if (await registerUser(signUpData)) {
-        Alert.alert('Success', 'User registered successfully!');
+      if (response.idToken) {
+        await AsyncStorage.setItem('userToken', response.idToken);
+        console.log('Token stored successfully');
+
         navigation.navigate('UserHome');
+      } else {
+        Alert.alert(
+          'Invalid Credentials',
+          'Please enter correct Email and Password.',
+        );
       }
     } catch (error: any) {
       Alert.alert('Registration Failed', error.message);

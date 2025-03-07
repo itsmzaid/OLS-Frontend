@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import Header from '../../components/Header-SideBar/Header';
 import {fetchServiceItems} from '../../api/items';
+import {useOrder} from '../../context/OrderContext';
 
 const capitalizeFirstLetter = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
@@ -35,7 +36,7 @@ type Product = {
 
 const Wash = ({navigation}: any) => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [quantities, setQuantities] = useState<{[key: string]: number}>({});
+  const {selectedItems, addItem, removeItem} = useOrder();
 
   useEffect(() => {
     loadProducts();
@@ -55,38 +56,56 @@ const Wash = ({navigation}: any) => {
     }
   };
 
-  const handleIncrease = (id: string) => {
-    setQuantities(prev => ({...prev, [id]: (prev[id] || 0) + 1}));
+  const handleIncrease = (item: Product) => {
+    addItem({
+      itemId: item.id,
+      itemName: item.name,
+      serviceName: 'wash',
+      quantity: 1,
+      price: item.price,
+    });
   };
 
-  const handleDecrease = (id: string) => {
-    setQuantities(prev => ({...prev, [id]: prev[id] > 0 ? prev[id] - 1 : 0}));
+  const handleDecrease = (itemId: string) => {
+    removeItem(itemId);
   };
 
-  const isPickupEnabled = Object.values(quantities).some(qty => qty >= 1);
+  const handleNext = () => {
+    if (selectedItems.length > 0) {
+      navigation.navigate('DeliveryDetails', {selectedItems});
+    }
+  };
 
-  const renderItem = ({item}: {item: Product}) => (
-    <View style={styles.itemContainer}>
-      <Image source={getIcon(item.name)} style={styles.itemImage} />
-      <View style={styles.itemDetails}>
-        <Text style={styles.itemName}>{capitalizeFirstLetter(item.name)}</Text>
-        <Text style={styles.itemPrice}>RS: {item.price}</Text>
+  const renderItem = ({item}: {item: Product}) => {
+    const quantity =
+      selectedItems.find(i => i.itemId === item.id)?.quantity || 0;
+
+    return (
+      <View style={styles.itemContainer}>
+        <Image source={getIcon(item.name)} style={styles.itemImage} />
+        <View style={styles.itemDetails}>
+          <Text style={styles.itemName}>
+            {capitalizeFirstLetter(item.name)}
+          </Text>
+          <Text style={styles.itemPrice}>RS: {item.price}</Text>
+        </View>
+        <View style={styles.counterContainer}>
+          <TouchableOpacity
+            style={styles.counterButton}
+            onPress={() => handleDecrease(item.id)}
+            disabled={quantity === 0}>
+            <Text style={styles.counterText}>-</Text>
+          </TouchableOpacity>
+          <Text style={styles.counterValue}>{quantity}</Text>
+          <TouchableOpacity
+            style={styles.counterButton}
+            onPress={() => handleIncrease(item)}>
+            <Text style={styles.counterText}>+</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      <View style={styles.counterContainer}>
-        <TouchableOpacity
-          style={styles.counterButton}
-          onPress={() => handleDecrease(item.id)}>
-          <Text style={styles.counterText}>-</Text>
-        </TouchableOpacity>
-        <Text style={styles.counterValue}>{quantities[item.id] || 0}</Text>
-        <TouchableOpacity
-          style={styles.counterButton}
-          onPress={() => handleIncrease(item.id)}>
-          <Text style={styles.counterText}>+</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -111,14 +130,10 @@ const Wash = ({navigation}: any) => {
         <TouchableOpacity
           style={[
             styles.pickupButton,
-            !isPickupEnabled && styles.disabledButton,
+            selectedItems.length === 0 && styles.disabledButton,
           ]}
-          onPress={() => {
-            if (isPickupEnabled) {
-              navigation.navigate('DeliveryDetails');
-            }
-          }}
-          disabled={!isPickupEnabled}>
+          onPress={handleNext}
+          disabled={selectedItems.length === 0}>
           <Text style={styles.pickupButtonText}>Schedule a Pickup</Text>
         </TouchableOpacity>
       </View>

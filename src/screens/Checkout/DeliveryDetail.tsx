@@ -15,18 +15,25 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Header from '../../components/Header-SideBar/Header';
 import {getUserData} from '../../api/user';
+import {createOrder} from '../../api/order';
+import {useOrder} from '../../context/OrderContext';
 
 const DeliveryDetails = ({navigation}: any) => {
+  const {selectedItems} = useOrder();
+  console.log(selectedItems);
+
   const [formData, setFormData] = useState({
-    email: '',
-    name: '',
+    userEmail: '',
+    userName: '',
+    userPhoneNo: '',
     address: '',
-    phone: '',
     pickupDate: new Date(),
     pickupTime: new Date(),
   });
+
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -34,9 +41,9 @@ const DeliveryDetails = ({navigation}: any) => {
         const userData = await getUserData();
         setFormData(prev => ({
           ...prev,
-          email: userData.email,
-          name: userData.name,
-          phone: userData.phoneNo,
+          userEmail: userData.email,
+          userName: userData.name,
+          userPhoneNo: userData.phoneNo,
         }));
       } catch (error) {
         console.error('Error fetching user:', error);
@@ -51,10 +58,37 @@ const DeliveryDetails = ({navigation}: any) => {
   };
 
   const isFormValid =
-    formData.email &&
-    formData.name &&
-    formData.phone &&
+    formData.userEmail &&
+    formData.userName &&
+    formData.userPhoneNo &&
     formData.address.trim() !== '';
+
+  const handleSubmit = async () => {
+    if (!isFormValid) return;
+
+    const orderData = {
+      userEmail: formData.userEmail,
+      userName: formData.userName,
+      userPhoneNo: formData.userPhoneNo,
+      address: formData.address,
+      status: 'Pending',
+      deliveryCharges: 150,
+      pickupDate: formData.pickupDate,
+      pickupTime: formData.pickupTime.toLocaleTimeString(),
+      paymentMethod: 'Cash on Delivery',
+      orderItems: selectedItems,
+    };
+
+    try {
+      setLoading(true);
+      await createOrder(orderData);
+      setLoading(false);
+      navigation.navigate('Cart');
+    } catch (error) {
+      console.error('Failed to place order:', error);
+      setLoading(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -82,13 +116,23 @@ const DeliveryDetails = ({navigation}: any) => {
                 style={[styles.input, styles.shadow]}
                 placeholder="Email"
                 placeholderTextColor="#000"
-                value={formData.email}
+                value={formData.userEmail}
+                editable={false}
               />
               <TextInput
                 style={[styles.input, styles.shadow]}
                 placeholder="Name"
                 placeholderTextColor="#000"
-                value={formData.name}
+                value={formData.userName}
+                editable={false}
+              />
+              <TextInput
+                style={[styles.input, styles.shadow]}
+                placeholder="Phone"
+                placeholderTextColor="#000"
+                value={formData.userPhoneNo}
+                editable={false}
+                keyboardType="numeric"
               />
               <TextInput
                 style={[styles.input, styles.shadow]}
@@ -96,13 +140,6 @@ const DeliveryDetails = ({navigation}: any) => {
                 placeholderTextColor="#000"
                 value={formData.address}
                 onChangeText={text => handleChange('address', text)}
-              />
-              <TextInput
-                style={[styles.input, styles.shadow]}
-                placeholder="Phone"
-                placeholderTextColor="#000"
-                keyboardType="numeric"
-                value={formData.phone}
               />
 
               <TouchableOpacity
@@ -116,7 +153,6 @@ const DeliveryDetails = ({navigation}: any) => {
                   style={styles.icon}
                 />
               </TouchableOpacity>
-
               {showDatePicker && (
                 <DateTimePicker
                   mode="date"
@@ -140,7 +176,6 @@ const DeliveryDetails = ({navigation}: any) => {
                   style={styles.icon}
                 />
               </TouchableOpacity>
-
               {showTimePicker && (
                 <DateTimePicker
                   mode="time"
@@ -160,13 +195,11 @@ const DeliveryDetails = ({navigation}: any) => {
                 styles.checkoutButton,
                 !isFormValid && styles.disabledButton,
               ]}
-              onPress={() => {
-                if (isFormValid) {
-                  navigation.navigate('Cart');
-                }
-              }}
-              disabled={!isFormValid}>
-              <Text style={styles.checkoutText}>Checkout ➤</Text>
+              onPress={handleSubmit}
+              disabled={!isFormValid || loading}>
+              <Text style={styles.checkoutText}>
+                {loading ? 'Placing Order...' : 'Checkout ➤'}
+              </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -176,35 +209,17 @@ const DeliveryDetails = ({navigation}: any) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: 'space-between',
-  },
-  Subcontainer: {
-    padding: 20,
-  },
+  container: {flex: 1, backgroundColor: '#F5F5F5'},
+  scrollContainer: {flexGrow: 1, justifyContent: 'space-between'},
+  Subcontainer: {padding: 20},
   titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
   },
-  backIcon: {
-    width: 35,
-    height: 35,
-    marginRight: 10,
-  },
-  title: {
-    fontSize: 24,
-    fontFamily: 'Montserrat-ExtraBold',
-    color: '#1398D0',
-  },
-  form: {
-    flex: 1,
-  },
+  backIcon: {width: 35, height: 35, marginRight: 10},
+  title: {fontSize: 24, fontFamily: 'Montserrat-ExtraBold', color: '#1398D0'},
+  form: {flex: 1},
   input: {
     backgroundColor: '#FFF',
     padding: 15,
@@ -231,33 +246,16 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 0, height: 2},
     shadowRadius: 3,
   },
-  dateText: {
-    fontSize: 16,
-    color: '#000',
-  },
-  icon: {
-    width: 30,
-    height: 30,
-  },
-  footer: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    marginTop: 'auto',
-  },
+  dateText: {fontSize: 16, color: '#000'},
+  icon: {width: 30, height: 30},
+  footer: {paddingHorizontal: 20, paddingBottom: 20, marginTop: 'auto'},
   checkoutButton: {
     backgroundColor: '#1398D0',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
   },
-  checkoutText: {
-    color: '#FFF',
-    fontSize: 18,
-    fontFamily: 'Montserrat-Bold',
-  },
-  disabledButton: {
-    backgroundColor: '#A9A9A9',
-  },
+  checkoutText: {color: '#FFF', fontSize: 18, fontFamily: 'Montserrat-Bold'},
+  disabledButton: {backgroundColor: '#A9A9A9'},
 });
-
 export default DeliveryDetails;
