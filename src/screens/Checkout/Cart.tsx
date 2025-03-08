@@ -154,7 +154,9 @@ const Cart = ({navigation}: any) => {
       </View>
 
       {/* Proceed Button */}
-      <TouchableOpacity style={styles.proceedButton}>
+      <TouchableOpacity
+        style={styles.proceedButton}
+        onPress={() => navigation.navigate('PaymentMethod')}>
         <Text style={styles.proceedText}>Proceed to payment ➤</Text>
       </TouchableOpacity>
     </View>

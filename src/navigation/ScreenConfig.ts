@@ -13,6 +13,8 @@ import Iron from '../screens/Services/Iron';
 import Wash from '../screens/Services/Wash';
 import DeliveryDetails from '../screens/Checkout/DeliveryDetail';
 import Cart from '../screens/Checkout/Cart';
+import PaymentMethod from '../screens/Payment/PaymentMethod';
+import ConfirmOrder from '../screens/Confirm/ConfirmOrder';
 
 export const screens = {
   Intropg1: {
@@ -73,6 +75,14 @@ export const screens = {
   },
   Cart: {
     component: Cart,
+    options: {headerShown: false},
+  },
+  PaymentMethod: {
+    component: PaymentMethod,
+    options: {headerShown: false},
+  },
+  ConfirmOrder: {
+    component: ConfirmOrder,
     options: {headerShown: false},
   },
 };

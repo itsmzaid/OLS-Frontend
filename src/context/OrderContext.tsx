@@ -11,7 +11,7 @@ type OrderItem = {
 type OrderContextType = {
   selectedItems: OrderItem[];
   addItem: (item: OrderItem) => void;
-  removeItem: (itemId: string) => void;
+  removeItem: (itemId: string, decreaseQuantity?: boolean) => void;
   clearOrder: () => void;
 };
 
@@ -27,7 +27,7 @@ export const OrderProvider: React.FC<{children: React.ReactNode}> = ({
       const existingItem = prev.find(i => i.itemId === item.itemId);
       if (existingItem) {
         return prev.map(i =>
-          i.itemId === item.itemId ? {...i, quantity: item.quantity} : i,
+          i.itemId === item.itemId ? {...i, quantity: i.quantity + 1} : i,
         );
       } else {
         return [...prev, item];
@@ -35,8 +35,20 @@ export const OrderProvider: React.FC<{children: React.ReactNode}> = ({
     });
   };
 
-  const removeItem = (itemId: string) => {
-    setSelectedItems(prev => prev.filter(i => i.itemId !== itemId));
+  const removeItem = (itemId: string, decreaseQuantity = false) => {
+    setSelectedItems(prev => {
+      const existingItem = prev.find(i => i.itemId === itemId);
+
+      if (!existingItem) return prev;
+
+      if (decreaseQuantity && existingItem.quantity > 1) {
+        return prev.map(i =>
+          i.itemId === itemId ? {...i, quantity: i.quantity - 1} : i,
+        );
+      } else {
+        return prev.filter(i => i.itemId !== itemId);
+      }
+    });
   };
 
   const clearOrder = () => {

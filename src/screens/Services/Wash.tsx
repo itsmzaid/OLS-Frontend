@@ -67,7 +67,7 @@ const Wash = ({navigation}: any) => {
   };
 
   const handleDecrease = (itemId: string) => {
-    removeItem(itemId);
+    removeItem(itemId, true);
   };
 
   const handleNext = () => {
@@ -77,8 +77,8 @@ const Wash = ({navigation}: any) => {
   };
 
   const renderItem = ({item}: {item: Product}) => {
-    const quantity =
-      selectedItems.find(i => i.itemId === item.id)?.quantity || 0;
+    const existingItem = selectedItems.find(i => i.itemId === item.id);
+    const quantity = existingItem ? existingItem.quantity : 0;
 
     return (
       <View style={styles.itemContainer}>
@@ -91,7 +91,7 @@ const Wash = ({navigation}: any) => {
         </View>
         <View style={styles.counterContainer}>
           <TouchableOpacity
-            style={styles.counterButton}
+            style={[styles.counterButton]}
             onPress={() => handleDecrease(item.id)}
             disabled={quantity === 0}>
             <Text style={styles.counterText}>-</Text>
