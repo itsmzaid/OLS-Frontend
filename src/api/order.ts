@@ -10,6 +10,16 @@ export const createOrder = async (orderData: any) => {
   }
 };
 
+export const getPendingOrder = async () => {
+  try {
+    const response = await api.get('/orders/pending');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching pending order:', error);
+    throw error;
+  }
+};
+
 export const getOrderById = async (orderId: string) => {
   try {
     const response = await api.get(`/orders/${orderId}`);

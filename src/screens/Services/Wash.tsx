@@ -36,6 +36,7 @@ type Product = {
 
 const Wash = ({navigation}: any) => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [quantities, setQuantities] = useState<{[key: string]: number}>({});
   const {selectedItems, addItem, removeItem} = useOrder();
 
   useEffect(() => {
@@ -51,9 +52,18 @@ const Wash = ({navigation}: any) => {
       }));
 
       setProducts(updatedData);
+      resetQuantities(updatedData);
     } catch (error) {
       console.error('Failed to load products:', error);
     }
+  };
+
+  const resetQuantities = (data: Product[]) => {
+    const initialQuantities: {[key: string]: number} = {};
+    data.forEach(item => {
+      initialQuantities[item.id] = 0;
+    });
+    setQuantities(initialQuantities);
   };
 
   const handleIncrease = (item: Product) => {
@@ -64,21 +74,30 @@ const Wash = ({navigation}: any) => {
       quantity: 1,
       price: item.price,
     });
+
+    setQuantities(prev => ({
+      ...prev,
+      [item.id]: (prev[item.id] || 0) + 1,
+    }));
   };
 
   const handleDecrease = (itemId: string) => {
     removeItem(itemId, true);
+    setQuantities(prev => ({
+      ...prev,
+      [itemId]: Math.max((prev[itemId] || 0) - 1, 0),
+    }));
   };
 
   const handleNext = () => {
     if (selectedItems.length > 0) {
+      resetQuantities(products);
       navigation.navigate('DeliveryDetails', {selectedItems});
     }
   };
 
   const renderItem = ({item}: {item: Product}) => {
-    const existingItem = selectedItems.find(i => i.itemId === item.id);
-    const quantity = existingItem ? existingItem.quantity : 0;
+    const quantity = quantities[item.id] || 0;
 
     return (
       <View style={styles.itemContainer}>

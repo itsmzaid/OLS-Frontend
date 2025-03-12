@@ -19,7 +19,7 @@ import {createOrder} from '../../api/order';
 import {useOrder} from '../../context/OrderContext';
 
 const DeliveryDetails = ({navigation}: any) => {
-  const {selectedItems} = useOrder();
+  const {selectedItems, clearOrder} = useOrder(); // Added clearOrder to reset context
   console.log(selectedItems);
 
   const [formData, setFormData] = useState({
@@ -82,8 +82,9 @@ const DeliveryDetails = ({navigation}: any) => {
     try {
       setLoading(true);
       await createOrder(orderData);
+      clearOrder(); // Clear order context after successful order creation
       setLoading(false);
-      navigation.navigate('Cart');
+      navigation.navigate('Cart'); // Navigate after clearing cart
     } catch (error) {
       console.error('Failed to place order:', error);
       setLoading(false);
@@ -258,4 +259,5 @@ const styles = StyleSheet.create({
   checkoutText: {color: '#FFF', fontSize: 18, fontFamily: 'Montserrat-Bold'},
   disabledButton: {backgroundColor: '#A9A9A9'},
 });
+
 export default DeliveryDetails;

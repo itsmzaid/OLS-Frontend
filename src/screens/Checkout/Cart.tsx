@@ -9,29 +9,36 @@ import {
   Alert,
 } from 'react-native';
 import Header from '../../components/Header-SideBar/Header';
+import {getPendingOrder} from '../../api/order';
 
 const getIcon = (name: string) => {
   const icons: {[key: string]: any} = {
-    Hoodie: require('../../assets/icons/hoodie.png'),
-    'T-Shirt': require('../../assets/icons/tshirt.png'),
-    Jean: require('../../assets/icons/jeans.png'),
-    Jacket: require('../../assets/icons/jacket.png'),
-    Towel: require('../../assets/icons/towel.png'),
-    Dress: require('../../assets/icons/dress.png'),
+    't-shirt': require('../../assets/icons/tshirt.png'),
+    hoodie: require('../../assets/icons/hoodie.png'),
+    jeans: require('../../assets/icons/jeans.png'),
+    jacket: require('../../assets/icons/jacket.png'),
+    towel: require('../../assets/icons/towel.png'),
+    dress: require('../../assets/icons/dress.png'),
   };
-  return icons[name] || require('../../assets/icons/hoodie.png');
+  return icons[name.toLowerCase()] || require('../../assets/icons/hoodie.png');
+};
+
+const capitalizeFirstLetter = (str: string) => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
 type CartItem = {
-  id: string;
-  name: string;
-  type: string;
+  itemName: string;
+  serviceName: string;
   price: number;
   quantity: number;
 };
 
 const Cart = ({navigation}: any) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [deliveryCharges, setDeliveryCharges] = useState<number>(0);
+  const [subtotal, setSubtotal] = useState<number>(0);
+  const [total, setTotal] = useState<number>(0);
 
   useEffect(() => {
     fetchCartItems();
@@ -39,63 +46,26 @@ const Cart = ({navigation}: any) => {
 
   const fetchCartItems = async () => {
     try {
-      const dummyData: CartItem[] = [
-        {id: '1', name: 'T-Shirt', type: 'Wash', price: 180, quantity: 3},
-        {id: '2', name: 'Dress', type: 'Iron', price: 240, quantity: 2},
-        {id: '3', name: 'Jacket', type: 'Dry', price: 400, quantity: 2},
-      ];
-      setCartItems(dummyData);
+      const response = await getPendingOrder();
+      console.log('Response:', response);
+
+      setCartItems(response.orderItems);
+      setDeliveryCharges(response.deliveryCharges);
+      const calculatedSubtotal = response.orderItems.reduce(
+        (acc: number, item: CartItem) => acc + item.price * item.quantity,
+        0,
+      );
+      setSubtotal(calculatedSubtotal);
+      setTotal(calculatedSubtotal + response.deliveryCharges);
     } catch (error) {
       Alert.alert('Error', 'Failed to fetch cart items');
     }
   };
 
-  const updateCartInBackend = async (id: string, newQuantity: number) => {
-    try {
-      console.log(`Updating cart item ${id} to quantity ${newQuantity}`);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to update quantity');
-    }
-  };
-
-  const handleIncrease = (id: string) => {
-    setCartItems(prev =>
-      prev.map(item =>
-        item.id === id ? {...item, quantity: item.quantity + 1} : item,
-      ),
-    );
-    updateCartInBackend(
-      id,
-      cartItems.find(item => item.id === id)!.quantity + 1,
-    );
-  };
-
-  const handleDecrease = (id: string) => {
-    setCartItems(prev =>
-      prev.map(item =>
-        item.id === id && item.quantity > 0
-          ? {...item, quantity: item.quantity - 1}
-          : item,
-      ),
-    );
-    updateCartInBackend(
-      id,
-      cartItems.find(item => item.id === id)!.quantity - 1,
-    );
-  };
-
-  const subtotal = cartItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0,
-  );
-  const deliveryCharges = 150;
-  const total = subtotal + deliveryCharges;
-
   return (
     <View style={styles.container}>
       <Header navigation={navigation} />
 
-      {/* Title */}
       <View style={styles.titleContainer}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Image
@@ -106,34 +76,28 @@ const Cart = ({navigation}: any) => {
         <Text style={styles.title}>Checkout</Text>
       </View>
 
-      {/* Cart Items */}
       <FlatList
         data={cartItems}
-        keyExtractor={item => item.id}
+        keyExtractor={(item, index) => index.toString()}
         renderItem={({item}) => (
           <View style={styles.cartItem}>
-            <Image source={getIcon(item.name)} style={styles.itemImage} />
+            <Image source={getIcon(item.itemName)} style={styles.itemImage} />
             <View style={styles.itemDetails}>
-              <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.itemType}>{item.type}</Text>
-              <Text style={styles.itemPrice}>RS: {item.price}</Text>
+              <Text style={styles.itemName}>
+                {capitalizeFirstLetter(item.itemName)}
+              </Text>
+              <Text style={styles.itemType}>{item.serviceName}</Text>
             </View>
-            <View style={styles.quantityContainer}>
-              <TouchableOpacity onPress={() => handleDecrease(item.id)}>
-                <Text style={styles.quantityButton}>➖</Text>
-              </TouchableOpacity>
-              <Text style={styles.quantityText}>{item.quantity}</Text>
-              <TouchableOpacity onPress={() => handleIncrease(item.id)}>
-                <Text style={styles.quantityButton}>➕</Text>
-              </TouchableOpacity>
+            <View style={styles.priceDetails}>
+              <Text style={styles.itemPrice}>RS: {item.price}</Text>
+              <Text style={styles.itemQuantity}>Qty: {item.quantity}</Text>
             </View>
           </View>
         )}
         contentContainerStyle={styles.cartList}
       />
 
-      {/* Price Details */}
-      <View style={styles.priceDetails}>
+      <View style={styles.priceContainer}>
         <Text style={styles.priceTitle}>Price details</Text>
         <View style={styles.priceBox}>
           <View style={styles.priceRow}>
@@ -153,7 +117,6 @@ const Cart = ({navigation}: any) => {
         </View>
       </View>
 
-      {/* Proceed Button */}
       <TouchableOpacity
         style={styles.proceedButton}
         onPress={() => navigation.navigate('PaymentMethod')}>
@@ -209,47 +172,24 @@ const styles = StyleSheet.create({
     color: '#004E70',
   },
   itemType: {
-    fontSize: 12,
-    color: '#888',
+    fontSize: 14,
+    color: '#1398D0',
     fontFamily: 'Montserrat-Medium',
+  },
+  priceDetails: {
+    alignItems: 'flex-end',
   },
   itemPrice: {
     fontSize: 16,
     fontFamily: 'Montserrat-Bold',
     color: '#1398D0',
   },
-  quantityContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  quantityButton: {
-    fontSize: 22,
-    color: '#1398D0',
-    marginHorizontal: 10,
-  },
-  quantityText: {
-    fontSize: 18,
-    fontFamily: 'Montserrat-Bold',
-  },
-  priceLabel: {
-    fontSize: 16,
-    color: '#004E70',
+  itemQuantity: {
+    fontSize: 14,
     fontFamily: 'Montserrat-Medium',
+    color: '#004E70',
   },
-
-  priceValue: {
-    fontSize: 16,
-    fontFamily: 'Montserrat-Bold',
-    color: '#1398D0',
-  },
-
-  totalValue: {
-    fontSize: 18,
-    fontFamily: 'Montserrat-Bold',
-    color: '#1398D0',
-  },
-
-  priceDetails: {
+  priceContainer: {
     paddingHorizontal: 20,
     paddingTop: 10,
   },
@@ -269,9 +209,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 5,
   },
+  priceLabel: {
+    fontSize: 16,
+    color: '#004E70',
+    fontFamily: 'Montserrat-Medium',
+  },
+  priceValue: {
+    fontSize: 16,
+    fontFamily: 'Montserrat-Bold',
+    color: '#1398D0',
+  },
   totalLabel: {
     fontSize: 18,
     fontFamily: 'Montserrat-Bold',
+  },
+  totalValue: {
+    fontSize: 18,
+    fontFamily: 'Montserrat-Bold',
+    color: '#1398D0',
   },
   proceedButton: {
     backgroundColor: '#1398D0',
