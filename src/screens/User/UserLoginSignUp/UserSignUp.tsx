@@ -8,9 +8,9 @@ import {
   Image,
   Alert,
 } from 'react-native';
-import {registerUser} from '../../../api/auth';
-import {loginUser} from '../../../api/auth';
+import {registerUser, loginUser} from '../../../api/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useLoader} from '../../../context/LoaderContext';
 
 type UserSignUpProps = {
   navigation: {
@@ -19,34 +19,22 @@ type UserSignUpProps = {
 };
 
 const UserSignUp: React.FC<UserSignUpProps> = ({navigation}) => {
-  const [formData, setFormData] = useState<{
-    name: string;
-    email: string;
-    phoneNo: string;
-    password: string;
-  }>({
+  const [formData, setFormData] = useState({
     name: '',
     email: '',
     phoneNo: '',
     password: '',
   });
 
-  const [errors, setErrors] = useState({
-    phoneNo: '',
-    password: '',
-  });
-
+  const [errors, setErrors] = useState({phoneNo: '', password: ''});
   const [showPassword, setShowPassword] = useState(false);
+  const {showLoader, hideLoader} = useLoader(); // Loader context
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData(prev => ({...prev, [field]: value}));
 
     if (field === 'phoneNo') {
       let formattedPhoneNo = value.replace(/[^0-9]/g, '');
-
       if (formattedPhoneNo.startsWith('03')) {
         formattedPhoneNo = '+92' + formattedPhoneNo.slice(1);
       } else if (
@@ -58,20 +46,14 @@ const UserSignUp: React.FC<UserSignUpProps> = ({navigation}) => {
         formattedPhoneNo = '+92' + formattedPhoneNo.slice(2);
       }
 
-      setFormData(prev => ({
-        ...prev,
-        phoneNo: formattedPhoneNo,
-      }));
+      setFormData(prev => ({...prev, phoneNo: formattedPhoneNo}));
 
-      if (!/^\+923\d{9}$/.test(formattedPhoneNo)) {
-        setErrors(prev => ({
-          ...prev,
-          phoneNo:
-            'Phone number must start with +923 and be followed by 9 digits.',
-        }));
-      } else {
-        setErrors(prev => ({...prev, phoneNo: ''}));
-      }
+      setErrors(prev => ({
+        ...prev,
+        phoneNo: /^\+923\d{9}$/.test(formattedPhoneNo)
+          ? ''
+          : 'Phone number must start with +923 and be followed by 9 digits.',
+      }));
     }
 
     if (field === 'password') {
@@ -84,10 +66,9 @@ const UserSignUp: React.FC<UserSignUpProps> = ({navigation}) => {
 
       setErrors(prev => ({
         ...prev,
-        password:
-          messages.length > 0
-            ? `Password must include ${messages.join(', ')}.`
-            : '',
+        password: messages.length
+          ? `Password must include ${messages.join(', ')}.`
+          : '',
       }));
     }
   };
@@ -105,20 +86,14 @@ const UserSignUp: React.FC<UserSignUpProps> = ({navigation}) => {
       return;
     }
 
+    showLoader(); // Show loader before API call
     try {
-      const signUpData = {
-        name,
-        email,
-        phoneNo,
-        password,
-      };
-      await registerUser(signUpData);
+      await registerUser({name, email, phoneNo, password});
       const response = await loginUser(email, password);
 
       if (response.idToken) {
         await AsyncStorage.setItem('userToken', response.idToken);
         console.log('Token stored successfully');
-
         navigation.navigate('UserHome');
       } else {
         Alert.alert(
@@ -128,6 +103,8 @@ const UserSignUp: React.FC<UserSignUpProps> = ({navigation}) => {
       }
     } catch (error: any) {
       Alert.alert('Registration Failed', error.message);
+    } finally {
+      hideLoader(); // Hide loader after API call
     }
   };
 
@@ -215,19 +192,13 @@ const UserSignUp: React.FC<UserSignUpProps> = ({navigation}) => {
 export default UserSignUp;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9F9F9',
-  },
+  container: {flex: 1, backgroundColor: '#F9F9F9'},
   mask: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: '#38B5EA',
     opacity: 0,
   },
-  topImage: {
-    width: '100%',
-    height: '40%',
-  },
+  topImage: {width: '100%', height: '40%'},
   heading: {
     fontSize: 28,
     color: '#1398D0',
@@ -253,26 +224,22 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-ExtraBold',
     marginHorizontal: 15,
   },
-  inputContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 10,
-  },
+  inputContainer: {paddingHorizontal: 20, marginBottom: 20},
   input: {
     borderBottomWidth: 1,
     borderColor: '#1398D0',
     paddingVertical: 10,
-    paddingHorizontal: 0,
     fontSize: 16,
     color: '#1398D0',
     fontFamily: 'Montserrat-Regular',
-    marginBottom: 10,
+    marginBottom: 15,
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
     borderColor: '#1398D0',
-    marginBottom: 10,
+    marginBottom: 15,
   },
   passwordInput: {
     flex: 1,
@@ -281,20 +248,8 @@ const styles = StyleSheet.create({
     color: '#1398D0',
     fontFamily: 'Montserrat-Regular',
   },
-  iconContainer: {
-    padding: 5,
-  },
-  icon: {
-    width: 20,
-    height: 20,
-    tintColor: '#1398D0',
-  },
-  errorText: {
-    color: 'red',
-    fontSize: 12,
-    marginBottom: 10,
-    fontFamily: 'Montserrat-Regular',
-  },
+  iconContainer: {padding: 5},
+  icon: {width: 20, height: 20, tintColor: '#1398D0'},
   signupButton: {
     backgroundColor: '#1398D0',
     paddingVertical: 15,
@@ -302,11 +257,17 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     borderRadius: 20,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 30,
   },
   signupButtonText: {
     fontSize: 20,
     color: '#FFF',
     fontFamily: 'Montserrat-Bold',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 14,
+    marginTop: 5,
+    fontFamily: 'Montserrat-Regular',
   },
 });

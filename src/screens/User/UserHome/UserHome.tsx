@@ -8,30 +8,44 @@ import {
   ScrollView,
   BackHandler,
 } from 'react-native';
-
 import Sidebar from '../../../components/Header-SideBar/Sidebar';
+import {getConfirmedOrders} from '../../../api/order';
+import {useLoader} from '../../../context/LoaderContext';
 
-type UserHomeProps = {
-  navigation: {
-    navigate: (screen: string, params?: object) => void;
-    replace: (screen: string) => void;
-  };
+type Order = {
+  orderId: string;
+  orderNumber: string;
+  status: string;
 };
 
-const UserHome: React.FC<UserHomeProps> = ({navigation}) => {
+const UserHome: React.FC<{navigation: any}> = ({navigation}) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const {showLoader, hideLoader} = useLoader(); // Loader context
+
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
       'hardwareBackPress',
-      () => {
-        return true;
-      },
+      () => true,
     );
-
-    return () => {
-      backHandler.remove();
-    };
+    return () => backHandler.remove();
   }, []);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      showLoader(); // Loader Start
+      try {
+        const data = await getConfirmedOrders();
+        setOrders(data);
+      } catch (error) {
+        console.error('Failed to fetch confirmed orders:', error);
+      } finally {
+        hideLoader(); // Loader Stop
+      }
+    };
+    fetchOrders();
+  }, []);
+
   const handleOrderHistory = () => {
     navigation.navigate('OrderHistory');
   };
@@ -46,6 +60,7 @@ const UserHome: React.FC<UserHomeProps> = ({navigation}) => {
           />
         </View>
       )}
+
       <View style={styles.header}>
         <View style={styles.header_nav}>
           <TouchableOpacity
@@ -60,7 +75,6 @@ const UserHome: React.FC<UserHomeProps> = ({navigation}) => {
               style={styles.icon}
             />
           </TouchableOpacity>
-
           <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
             <Image
               source={require('../../../assets/icons/HomeCart.png')}
@@ -68,7 +82,6 @@ const UserHome: React.FC<UserHomeProps> = ({navigation}) => {
             />
           </TouchableOpacity>
         </View>
-
         <View style={styles.welcomeContainer}>
           <Image
             source={require('../../../assets/images/userIcon.png')}
@@ -123,7 +136,9 @@ const UserHome: React.FC<UserHomeProps> = ({navigation}) => {
       <ScrollView>
         <View style={styles.activeOrdersContainer}>
           <View style={styles.activeOrdersHeader}>
-            <Text style={styles.activeOrdersTitle}>Active Orders (9)</Text>
+            <Text style={styles.activeOrdersTitle}>
+              Active Orders ({orders.length})
+            </Text>
             <TouchableOpacity
               style={styles.orderHistoryButton}
               onPress={handleOrderHistory}>
@@ -131,19 +146,24 @@ const UserHome: React.FC<UserHomeProps> = ({navigation}) => {
             </TouchableOpacity>
           </View>
 
+          {/* Orders List */}
           <View style={styles.ordersList}>
-            <View style={styles.orderCard}>
-              <Text style={styles.orderNumber}>Order No: #00003</Text>
-              <Text style={styles.orderStatus}>Order Placed</Text>
-            </View>
-            <View style={styles.orderCard}>
-              <Text style={styles.orderNumber}>Order No: #00002</Text>
-              <Text style={styles.orderStatus}>Order Confirmed</Text>
-            </View>
-            <View style={styles.orderCard}>
-              <Text style={styles.orderNumber}>Order No: #00001</Text>
-              <Text style={styles.orderStatus}>Order Completed</Text>
-            </View>
+            {orders.length > 0 ? (
+              orders.map(order => (
+                <View key={order.orderId} style={styles.orderCard}>
+                  <Text style={styles.orderNumber}>
+                    Order No: {order.orderNumber}
+                  </Text>
+                  <Text style={styles.orderStatus}>
+                    Order Status: {order.status}
+                  </Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.noOrdersText}>
+                There are no active orders at the moment.
+              </Text>
+            )}
           </View>
         </View>
       </ScrollView>
@@ -222,22 +242,20 @@ const styles = StyleSheet.create({
   },
   servicesIcons: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
   },
   serviceBox: {
     alignItems: 'center',
-    width: 70,
   },
   serviceIcon: {
     width: 50,
     height: 50,
-    marginBottom: 5,
   },
   serviceText: {
     fontSize: 14,
     color: '#004E70',
-    fontFamily: 'Montserrat-Regular',
-    textAlign: 'center',
+    fontFamily: 'Montserrat-SemiBold',
+    marginTop: 5,
   },
   activeOrdersContainer: {
     marginTop: 30,
@@ -247,7 +265,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 20,
   },
   activeOrdersTitle: {
     fontSize: 22,
@@ -256,9 +274,10 @@ const styles = StyleSheet.create({
   },
   orderHistoryButton: {
     backgroundColor: '#1398D0',
+
     paddingHorizontal: 15,
-    paddingVertical: 5,
-    borderRadius: 15,
+    paddingVertical: 9,
+    borderRadius: 20,
   },
   orderHistoryText: {
     fontSize: 12,
@@ -286,7 +305,14 @@ const styles = StyleSheet.create({
   orderStatus: {
     fontSize: 14,
     color: '#004E70',
-    fontFamily: 'Montserrat-Regular',
+    fontFamily: 'Montserrat-Medium',
     marginTop: 5,
+  },
+  noOrdersText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#555',
+    marginTop: 10,
+    fontFamily: 'Montserrat-Medium',
   },
 });

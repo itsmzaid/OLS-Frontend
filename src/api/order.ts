@@ -20,6 +20,28 @@ export const getPendingOrder = async () => {
   }
 };
 
+export const updateOrderStatus = async (orderId: string, status: string) => {
+  try {
+    const response = await api.patch(`/orders/${orderId}/status`, {status});
+    return response.data;
+  } catch (error: any) {
+    console.error('Error updating order status:', error);
+    throw new Error(
+      error.response?.data?.message || 'Failed to update order status',
+    );
+  }
+};
+
+export const getConfirmedOrders = async () => {
+  try {
+    const response = await api.get('/orders?status=Confirmed');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching confirmed orders:', error);
+    throw error;
+  }
+};
+
 export const getOrderById = async (orderId: string) => {
   try {
     const response = await api.get(`/orders/${orderId}`);

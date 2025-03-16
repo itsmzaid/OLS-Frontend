@@ -6,9 +6,15 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
+  ActivityIndicator, // Import loader
 } from 'react-native';
 import Header from '../../components/Header-SideBar/Header';
 import {fetchServiceItems} from '../../api/items';
+import {useOrder} from '../../context/OrderContext';
+
+const capitalizeFirstLetter = (str: string) => {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
 
 const getIcon = (name: string) => {
   const icons: {[key: string]: any} = {
@@ -23,9 +29,6 @@ const getIcon = (name: string) => {
   return icons[name.toLowerCase()] || require('../../assets/icons/hoodie.png');
 };
 
-const formatName = (name: string) =>
-  name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
-
 type Product = {
   id: string;
   name: string;
@@ -35,6 +38,8 @@ type Product = {
 const Iron = ({navigation}: any) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [quantities, setQuantities] = useState<{[key: string]: number}>({});
+  const [loading, setLoading] = useState<boolean>(true); // Add loading state
+  const {selectedItems, addItem, removeItem} = useOrder();
 
   useEffect(() => {
     loadProducts();
@@ -49,43 +54,81 @@ const Iron = ({navigation}: any) => {
       }));
 
       setProducts(updatedData);
+      resetQuantities(updatedData);
     } catch (error) {
       console.error('Failed to load products:', error);
+    } finally {
+      setLoading(false); // Hide loader after fetching data
     }
   };
 
-  const handleIncrease = (id: string) => {
-    setQuantities(prev => ({...prev, [id]: (prev[id] || 0) + 1}));
+  const resetQuantities = (data: Product[]) => {
+    const initialQuantities: {[key: string]: number} = {};
+    data.forEach(item => {
+      initialQuantities[item.id] = 0;
+    });
+    setQuantities(initialQuantities);
   };
 
-  const handleDecrease = (id: string) => {
-    setQuantities(prev => ({...prev, [id]: prev[id] > 0 ? prev[id] - 1 : 0}));
+  const handleIncrease = (item: Product) => {
+    addItem({
+      itemId: item.id,
+      itemName: item.name,
+      serviceName: 'iron',
+      quantity: 1,
+      price: item.price,
+    });
+
+    setQuantities(prev => ({
+      ...prev,
+      [item.id]: (prev[item.id] || 0) + 1,
+    }));
   };
 
-  const isPickupEnabled = Object.values(quantities).some(qty => qty >= 1);
+  const handleDecrease = (itemId: string) => {
+    removeItem(itemId, true);
+    setQuantities(prev => ({
+      ...prev,
+      [itemId]: Math.max((prev[itemId] || 0) - 1, 0),
+    }));
+  };
 
-  const renderItem = ({item}: {item: Product}) => (
-    <View style={styles.itemContainer}>
-      <Image source={getIcon(item.name)} style={styles.itemImage} />
-      <View style={styles.itemDetails}>
-        <Text style={styles.itemName}>{formatName(item.name)}</Text>
-        <Text style={styles.itemPrice}>RS: {item.price}</Text>
+  const handleNext = () => {
+    if (selectedItems.length > 0) {
+      resetQuantities(products);
+      navigation.navigate('DeliveryDetails', {selectedItems});
+    }
+  };
+
+  const renderItem = ({item}: {item: Product}) => {
+    const quantity = quantities[item.id] || 0;
+
+    return (
+      <View style={styles.itemContainer}>
+        <Image source={getIcon(item.name)} style={styles.itemImage} />
+        <View style={styles.itemDetails}>
+          <Text style={styles.itemName}>
+            {capitalizeFirstLetter(item.name)}
+          </Text>
+          <Text style={styles.itemPrice}>RS: {item.price}</Text>
+        </View>
+        <View style={styles.counterContainer}>
+          <TouchableOpacity
+            style={[styles.counterButton]}
+            onPress={() => handleDecrease(item.id)}
+            disabled={quantity === 0}>
+            <Text style={styles.counterText}>-</Text>
+          </TouchableOpacity>
+          <Text style={styles.counterValue}>{quantity}</Text>
+          <TouchableOpacity
+            style={styles.counterButton}
+            onPress={() => handleIncrease(item)}>
+            <Text style={styles.counterText}>+</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      <View style={styles.counterContainer}>
-        <TouchableOpacity
-          style={styles.counterButton}
-          onPress={() => handleDecrease(item.id)}>
-          <Text style={styles.counterText}>-</Text>
-        </TouchableOpacity>
-        <Text style={styles.counterValue}>{quantities[item.id] || 0}</Text>
-        <TouchableOpacity
-          style={styles.counterButton}
-          onPress={() => handleIncrease(item.id)}>
-          <Text style={styles.counterText}>+</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -101,23 +144,28 @@ const Iron = ({navigation}: any) => {
           <Text style={styles.header}>Iron Services</Text>
         </View>
 
-        <FlatList
-          data={products}
-          renderItem={renderItem}
-          keyExtractor={item => item.id}
-        />
+        {/* Show Loader While Fetching Data */}
+        {loading ? (
+          <ActivityIndicator
+            size="large"
+            color="#1398D0"
+            style={styles.loader}
+          />
+        ) : (
+          <FlatList
+            data={products}
+            renderItem={renderItem}
+            keyExtractor={item => item.id}
+          />
+        )}
 
         <TouchableOpacity
           style={[
             styles.pickupButton,
-            !isPickupEnabled && styles.disabledButton,
+            selectedItems.length === 0 && styles.disabledButton,
           ]}
-          onPress={() => {
-            if (isPickupEnabled) {
-              navigation.navigate('DeliveryDetails');
-            }
-          }}
-          disabled={!isPickupEnabled}>
+          onPress={handleNext}
+          disabled={selectedItems.length === 0}>
           <Text style={styles.pickupButtonText}>Schedule a Pickup</Text>
         </TouchableOpacity>
       </View>
@@ -149,6 +197,11 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontFamily: 'Montserrat-ExtraBold',
     color: '#1398D0',
+  },
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   itemContainer: {
     flexDirection: 'row',
@@ -208,7 +261,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   disabledButton: {
-    backgroundColor: '#A9A9A9',
+    backgroundColor: '#A0A0A0',
   },
   pickupButtonText: {
     color: '#fff',

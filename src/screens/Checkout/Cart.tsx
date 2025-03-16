@@ -9,13 +9,13 @@ import {
   Alert,
 } from 'react-native';
 import Header from '../../components/Header-SideBar/Header';
-import {getPendingOrder} from '../../api/order';
+import {getPendingOrder, updateOrderStatus} from '../../api/order';
 
 const getIcon = (name: string) => {
   const icons: {[key: string]: any} = {
     't-shirt': require('../../assets/icons/tshirt.png'),
     hoodie: require('../../assets/icons/hoodie.png'),
-    jeans: require('../../assets/icons/jeans.png'),
+    jean: require('../../assets/icons/jeans.png'),
     jacket: require('../../assets/icons/jacket.png'),
     towel: require('../../assets/icons/towel.png'),
     dress: require('../../assets/icons/dress.png'),
@@ -39,6 +39,7 @@ const Cart = ({navigation}: any) => {
   const [deliveryCharges, setDeliveryCharges] = useState<number>(0);
   const [subtotal, setSubtotal] = useState<number>(0);
   const [total, setTotal] = useState<number>(0);
+  const [orderId, setOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCartItems();
@@ -51,6 +52,8 @@ const Cart = ({navigation}: any) => {
 
       setCartItems(response.orderItems);
       setDeliveryCharges(response.deliveryCharges);
+      setOrderId(response.orderId); // Store order ID
+
       const calculatedSubtotal = response.orderItems.reduce(
         (acc: number, item: CartItem) => acc + item.price * item.quantity,
         0,
@@ -59,6 +62,20 @@ const Cart = ({navigation}: any) => {
       setTotal(calculatedSubtotal + response.deliveryCharges);
     } catch (error) {
       Alert.alert('Error', 'Failed to fetch cart items');
+    }
+  };
+
+  const handleProceedToPayment = async () => {
+    if (!orderId) {
+      Alert.alert('Error', 'Order ID not found');
+      return;
+    }
+
+    try {
+      await updateOrderStatus(orderId, 'Confirmed');
+      navigation.navigate('PaymentMethod');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update order status');
     }
   };
 
@@ -119,7 +136,7 @@ const Cart = ({navigation}: any) => {
 
       <TouchableOpacity
         style={styles.proceedButton}
-        onPress={() => navigation.navigate('PaymentMethod')}>
+        onPress={handleProceedToPayment}>
         <Text style={styles.proceedText}>Proceed to payment ➤</Text>
       </TouchableOpacity>
     </View>

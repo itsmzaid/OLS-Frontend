@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import {loginUser} from '../../../api/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useLoader} from '../../../context/LoaderContext';
 
 type UserLoginProps = {
   navigation: {
@@ -20,7 +21,7 @@ type UserLoginProps = {
 const UserLogin: React.FC<UserLoginProps> = ({navigation}) => {
   const [formData, setFormData] = useState({email: '', password: ''});
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const {showLoader, hideLoader} = useLoader(); // Loader context
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({...prev, [field]: value}));
@@ -34,7 +35,7 @@ const UserLogin: React.FC<UserLoginProps> = ({navigation}) => {
       return;
     }
 
-    setLoading(true);
+    showLoader(); // Show loader before API call
     try {
       const response = await loginUser(email, password);
 
@@ -52,7 +53,7 @@ const UserLogin: React.FC<UserLoginProps> = ({navigation}) => {
     } catch (error: any) {
       Alert.alert('Error', error.message);
     } finally {
-      setLoading(false);
+      hideLoader(); // Hide loader after API call
     }
   };
 
@@ -116,10 +117,8 @@ const UserLogin: React.FC<UserLoginProps> = ({navigation}) => {
           {opacity: formData.email && formData.password ? 1 : 0.7},
         ]}
         onPress={handleLogin}
-        disabled={!formData.email || !formData.password || loading}>
-        <Text style={styles.loginButtonText}>
-          {loading ? 'Logging in...' : 'Login'}
-        </Text>
+        disabled={!formData.email || !formData.password}>
+        <Text style={styles.loginButtonText}>Login</Text>
       </TouchableOpacity>
     </View>
   );

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
 import Header from '../../components/Header-SideBar/Header';
 import {fetchServiceItems} from '../../api/items';
@@ -37,6 +38,7 @@ type Product = {
 const Wash = ({navigation}: any) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [quantities, setQuantities] = useState<{[key: string]: number}>({});
+  const [loading, setLoading] = useState<boolean>(true); // Loader state added
   const {selectedItems, addItem, removeItem} = useOrder();
 
   useEffect(() => {
@@ -44,6 +46,7 @@ const Wash = ({navigation}: any) => {
   }, []);
 
   const loadProducts = async () => {
+    setLoading(true); // Start Loader
     try {
       const data = await fetchServiceItems('wash');
       const updatedData = data.map((item: any, index: number) => ({
@@ -55,6 +58,8 @@ const Wash = ({navigation}: any) => {
       resetQuantities(updatedData);
     } catch (error) {
       console.error('Failed to load products:', error);
+    } finally {
+      setLoading(false); // Stop Loader
     }
   };
 
@@ -140,11 +145,19 @@ const Wash = ({navigation}: any) => {
           <Text style={styles.header}>Wash Services</Text>
         </View>
 
-        <FlatList
-          data={products}
-          renderItem={renderItem}
-          keyExtractor={item => item.id}
-        />
+        {loading ? (
+          <ActivityIndicator
+            size="large"
+            color="#1398D0"
+            style={styles.loader}
+          />
+        ) : (
+          <FlatList
+            data={products}
+            renderItem={renderItem}
+            keyExtractor={item => item.id}
+          />
+        )}
 
         <TouchableOpacity
           style={[
@@ -184,6 +197,9 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontFamily: 'Montserrat-ExtraBold',
     color: '#1398D0',
+  },
+  loader: {
+    marginTop: 50,
   },
   itemContainer: {
     flexDirection: 'row',
